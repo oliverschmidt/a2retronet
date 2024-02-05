@@ -38,8 +38,8 @@ BLOCKH  := $47
 
 MSLOT   := $07F8        ; BUFFER FOR HI SLOT ADDR (SCN)
 
-DATA    := $C080        ; DATA REG
-STAT    := $C081        ; STATUS REG
+DATA    := $C088        ; DATA REG
+STAT    := $C089        ; STATUS REG
 
 COUT    := $FDED        ; CHARACTER OUT (THRU CSW)
 SETKBD  := $FE89        ; SETS KSW TO APPLE KEYBOARD

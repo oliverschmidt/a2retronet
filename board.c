@@ -32,8 +32,8 @@ SOFTWARE.
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
-static void __time_critical_func(callback)(uint gpio, uint32_t events) {
-    if (events & GPIO_IRQ_EDGE_FALL) {
+static void __time_critical_func(reset)(bool asserted) {
+    if (asserted) {
         sp_reset();
     }
 }
@@ -42,7 +42,7 @@ void __time_critical_func(board)(void) {
 
     a2pico_init(pio0);
 
-    a2pico_resetcallback(&callback);
+    a2pico_resethandler(&reset);
 
     while (true) {
         uint32_t pico = a2pico_getaddr(pio0);
@@ -53,11 +53,14 @@ void __time_critical_func(board)(void) {
 
         if (read) {
             if (!io) {  // DEVSEL
-                if (addr & 0x1) {  // STATUS
-                    a2pico_putdata(pio0, sp_status);
-                } else {  // DATA
-                    a2pico_putdata(pio0, sp_buffer[sp_read_offset]);
-                    sp_read_offset++;
+                switch (addr & 0xF) {
+                    case 0x8:  // DATA
+                        a2pico_putdata(pio0, sp_buffer[sp_read_offset]);
+                        sp_read_offset++;
+                        break;
+                    case 0x9:  // STATUS
+                        a2pico_putdata(pio0, sp_status);
+                        break;
                 }
             } else {
                 if (!strb) {  // IOSEL
@@ -67,10 +70,13 @@ void __time_critical_func(board)(void) {
         } else {
             uint32_t data = a2pico_getdata(pio0);
             if (!io) {  // DEVSEL
-                if (addr & 0x1) {  // STATUS
-                    sp_status = 0x01;
-                } else {  // DATA
-                    sp_buffer[sp_write_offset++] = data;
+                switch (addr & 0xF) {
+                    case 0x8:  // DATA
+                        sp_buffer[sp_write_offset++] = data;
+                        break;
+                    case 0x9:  // STATUS
+                        sp_status = 0x01;
+                        break;
                 }
             }
         }
