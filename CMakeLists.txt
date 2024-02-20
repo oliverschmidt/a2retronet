@@ -8,6 +8,9 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME})
 pico_add_extra_outputs(${PROJECT_NAME})
 
+# Make sure TinyUSB can find tusb_config.h
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+
 include(FetchContent)
 FetchContent_Declare(a2pico
         GIT_REPOSITORY https://github.com/oliverschmidt/a2pico.git
@@ -34,14 +37,18 @@ target_sources(${PROJECT_NAME} PRIVATE
         main.c
         board.c
         hdd.c
+        msc.c
         sp.c
         hw_config.c
+        usb_descriptors.c
         incbin.S
         )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_stdlib
         pico_multicore
+        pico_unique_id
+        tinyusb_device
         a2pico
         FatFs_SPI
         )

@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
+#include <tusb.h>
 
 #include "board.h"
 #include "sp.h"
@@ -35,9 +36,11 @@ void main(void) {
     
     stdio_init_all();
 
+    tusb_init();
     sp_init();
 
     while (true) {
+        tud_task();
         sp_task();
     }
 }
