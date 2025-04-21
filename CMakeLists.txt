@@ -11,17 +11,45 @@ pico_add_extra_outputs(${PROJECT_NAME})
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
+# Use FatFs coming with TinyUSB
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${PICO_TINYUSB_PATH}/lib/fatfs/source)
+target_sources(${PROJECT_NAME} PRIVATE
+        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ff.c
+        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ffsystem.c
+        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ffunicode.c
+        )
+
+# https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico requires
+# glue.c to be modified in order to allow multiple FatFs devices
+target_include_directories(${PROJECT_NAME} PRIVATE
+        sd_spi/include
+        sd_spi/sd_driver)
+target_sources(${PROJECT_NAME} PRIVATE
+        sd_spi/sd_driver/crc.c
+        sd_spi/sd_driver/demo_logging.c
+        sd_spi/sd_driver/hw_config.c
+        sd_spi/sd_driver/sd_card.c
+        sd_spi/sd_driver/sd_spi.c
+        sd_spi/sd_driver/spi.c
+        sd_spi/src/f_util.c
+        sd_spi/src/ff_stdio.c
+        sd_spi/src/glue.c
+        sd_spi/src/my_debug.c
+        sd_spi/src/rtc.c
+        )
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        hardware_dma
+        hardware_rtc
+        hardware_spi
+        )
+
 include(FetchContent)
 FetchContent_Declare(a2pico
         GIT_REPOSITORY https://github.com/oliverschmidt/a2pico.git
         GIT_TAG main
         )
 FetchContent_MakeAvailable(a2pico)
-FetchContent_Declare(FatFs_SPI
-        GIT_REPOSITORY https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico.git
-        SOURCE_SUBDIR FatFs_SPI
-        )
-FetchContent_MakeAvailable(FatFs_SPI)
 
 set_source_files_properties(incbin.S OBJECT_DEPENDS firmware.rom)
 add_custom_command(
@@ -39,7 +67,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         hdd.c
         msc.c
         sp.c
-        hw_config.c
+        diskio.c
         usb_descriptors.c
         incbin.S
         )
@@ -50,5 +78,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_unique_id
         tinyusb_device
         a2pico
-        FatFs_SPI
         )
