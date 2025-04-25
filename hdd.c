@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include <string.h>
 #include <stdio.h>
-
 #include <rtc.h>
 #include <f_util.h>
 #include <hw_config.h>

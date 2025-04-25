@@ -45,16 +45,14 @@ void sp_init(void) {
 #endif    
 }
 
-void __time_critical_func(sp_reset)(void)
-{
+void __time_critical_func(sp_reset)(void) {
     sp_status = 0x00;
     sp_write_offset = 0;
     sp_read_offset = 0;
     sp_buffer[0] = sp_buffer[1] = 0;
 }
 
-void sp_task(void)
-{
+void sp_task(void) {
     if (sp_status == 0x01) {
 
 #ifdef PICO_DEFAULT_LED_PIN
