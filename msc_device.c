@@ -25,14 +25,12 @@ SOFTWARE.
 */
 
 #include <tusb.h>
-
 #include <ff.h>
 #include <diskio.h>
 
 #include "hdd.h"
 
-int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
-{
+int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
 //    printf("MSC Read(LBA=$%08X)\n", lba);
 
     if (offset || bufsize % FF_MAX_SS) {
@@ -48,8 +46,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buff
     return bufsize;
 }
 
-int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
-{
+int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) {
 //    printf("MSC Write(LBA=$%08X)\n", lba);
 
     if (offset || bufsize % FF_MAX_SS) {
@@ -68,8 +65,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
     return bufsize;
 }
 
-void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
-{
+void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) {
     printf("MSC Inquiry\n");
 
     const char vid[] = "A2retro";
@@ -81,14 +77,12 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
     memcpy(product_rev, rev, strlen(rev));
 }
 
-bool tud_msc_test_unit_ready_cb(uint8_t lun)
-{
+bool tud_msc_test_unit_ready_cb(uint8_t lun) {
 //    printf("MSC Ready\n");
     return true;
 }
 
-void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
-{
+void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size) {
     printf("MSC Capacity\n");
 
     *block_size = FF_MAX_SS;
@@ -103,8 +97,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
     *block_count = sector_count;
 }
 
-int32_t tud_msc_scsi_cb(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize)
-{
+int32_t tud_msc_scsi_cb(uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize) {
     if (scsi_cmd[0] == SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL) {
 
         printf("MSC Medium\n");

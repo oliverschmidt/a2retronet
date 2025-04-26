@@ -26,22 +26,27 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
-#define BOARD_TUD_RHPORT        0
-#define BOARD_TUD_MAX_SPEED     OPT_MODE_DEFAULT_SPEED
-
+#if MEDIUM == SD
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
-#define CFG_TUSB_MEM_ALIGN      __attribute__ ((aligned(4)))
+#elif MEDIUM == USB
+#define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_HOST   | OPT_MODE_FULL_SPEED)
+#endif
 
-#define CFG_TUD_ENABLED         1
+#define BOARD_TUD_MAX_SPEED     OPT_MODE_DEFAULT_SPEED
+#define BOARD_TUH_MAX_SPEED     OPT_MODE_DEFAULT_SPEED
+
 #define CFG_TUD_MAX_SPEED       BOARD_TUD_MAX_SPEED
-#define CFG_TUD_ENDPOINT0_SIZE  64
-
-#define CFG_TUD_CDC             1
-#define CFG_TUD_CDC_RX_BUFSIZE  64
-#define CFG_TUD_CDC_TX_BUFSIZE  64
-#define CFG_TUD_CDC_EP_BUFSIZE  64
+#define CFG_TUH_MAX_SPEED       BOARD_TUH_MAX_SPEED
 
 #define CFG_TUD_MSC             1
+#define CFG_TUD_CDC             1
+
+#define CFG_TUH_MSC             1
+
 #define CFG_TUD_MSC_EP_BUFSIZE  8192
+
+#define CFG_TUD_CDC_EP_BUFSIZE  64
+#define CFG_TUD_CDC_RX_BUFSIZE  64
+#define CFG_TUD_CDC_TX_BUFSIZE  64
 
 #endif

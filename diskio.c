@@ -7,76 +7,83 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
-#include "ff.h"         /* Obtains integer types */
-#include "diskio.h"     /* Declarations of disk functions */
-#include "glue.h"       /* Declarations of SD card functions */
+#include <ff.h>         // Obtains integer types
+#include <diskio.h>     // Declarations of disk functions
+#include <glue.h>       // Declarations of SD card functions
+#include "usb_diskio.h" // Declarations of USB MSD functions
 
-/* Definitions of physical drive number for each drive */
-#define DEV_SD      0   /* Example: Map MMC/SD card to physical drive 0 */
-#define DEV_USB     1   /* Example: Map USB MSD to physical drive 1 */
+// Definitions of physical drive number for each drive
+#define DEV_SD      0   // Map MMC/SD card to physical drive 0
+#define DEV_USB     1   // Map USB MSD to physical drive 1
 
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
 /*-----------------------------------------------------------------------*/
 
-DSTATUS disk_status (
-    BYTE pdrv       /* Physical drive nmuber to identify the drive */
-)
-{
+DSTATUS disk_status(
+    BYTE pdrv   // Physical drive number to identify the drive
+) {
     switch (pdrv) {
-    case DEV_SD :
-        return sd_disk_status(DEV_SD);
-    case DEV_USB :
-//        return usb_disk_status(DEV_USB);
+        case DEV_SD:
+            return sd_disk_status(DEV_SD);
+
+#if MEDIUM == USB
+            case DEV_USB:
+            return usb_disk_status(DEV_USB);
+#endif
+
+        default:
+            return STA_NOINIT;
     }
-
-    return STA_NOINIT;
 }
-
 
 
 /*-----------------------------------------------------------------------*/
 /* Inidialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
 
-DSTATUS disk_initialize (
-    BYTE pdrv               /* Physical drive nmuber to identify the drive */
-)
-{
+DSTATUS disk_initialize(
+    BYTE pdrv   // Physical drive number to identify the drive
+) {
     switch (pdrv) {
-    case DEV_SD :
-        return sd_disk_initialize(DEV_SD);
-    case DEV_USB :
-//        return usb_disk_initialize(DEV_USB);
+        case DEV_SD:
+            return sd_disk_initialize(DEV_SD);
+
+#if MEDIUM == USB
+            case DEV_USB:
+            return usb_disk_initialize(DEV_USB);
+#endif
+
+        default:
+            return STA_NOINIT;
     }
-
-    return STA_NOINIT;
 }
-
 
 
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_read (
-    BYTE pdrv,      /* Physical drive nmuber to identify the drive */
-    BYTE *buff,     /* Data buffer to store read data */
-    LBA_t sector,   /* Start sector in LBA */
-    UINT count      /* Number of sectors to read */
-)
-{
+DRESULT disk_read(
+    BYTE pdrv,      // Physical drive number to identify the drive
+    BYTE *buff,     // Data buffer to store read data
+    LBA_t sector,   // Start sector in LBA
+    UINT count      // Number of sectors to read
+) {
     switch (pdrv) {
-    case DEV_SD :
-        return sd_disk_read(DEV_SD, buff, sector, count);
-    case DEV_USB :
-//        return usb_disk_read(DEV_USB, buff, sector, count);
+        case DEV_SD:
+            return sd_disk_read(DEV_SD, buff, sector, count);
+
+#if MEDIUM == USB
+            case DEV_USB:
+            return usb_disk_read(DEV_USB, buff, sector, count);
+#endif
+        
+        default:
+            return RES_PARERR;
     }
-
-    return RES_PARERR;
 }
-
 
 
 /*-----------------------------------------------------------------------*/
@@ -85,21 +92,24 @@ DRESULT disk_read (
 
 #if FF_FS_READONLY == 0
 
-DRESULT disk_write (
-    BYTE pdrv,          /* Physical drive nmuber to identify the drive */
-    const BYTE *buff,   /* Data to be written */
-    LBA_t sector,       /* Start sector in LBA */
-    UINT count          /* Number of sectors to write */
-)
-{
+DRESULT disk_write(
+    BYTE pdrv,          // Physical drive number to identify the drive
+    const BYTE *buff,   // Data to be written
+    LBA_t sector,       // Start sector in LBA
+    UINT count          // Number of sectors to write
+) {
     switch (pdrv) {
-    case DEV_SD :
-        return sd_disk_write(DEV_SD, buff, sector, count);
-    case DEV_USB :
-//        return usb_disk_write(DEV_USB, buff, sector, count);
-    }
+        case DEV_SD:
+            return sd_disk_write(DEV_SD, buff, sector, count);
 
-    return RES_PARERR;
+#if MEDIUM == USB
+            case DEV_USB:
+            return usb_disk_write(DEV_USB, buff, sector, count);
+#endif
+
+        default:
+            return RES_PARERR;
+    }
 }
 
 #endif
@@ -109,18 +119,21 @@ DRESULT disk_write (
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_ioctl (
-    BYTE pdrv,      /* Physical drive nmuber (0..) */
-    BYTE cmd,       /* Control code */
-    void *buff      /* Buffer to send/receive control data */
-)
-{
+DRESULT disk_ioctl(
+    BYTE pdrv,  // Physical drive number to identify the drive
+    BYTE cmd,   // Control code
+    void *buff  // Buffer to send/receive control data
+) {
     switch (pdrv) {
-    case DEV_SD :
-        return sd_disk_ioctl(DEV_SD, cmd, buff);
-    case DEV_USB :
-//        return usb_disk_ioctl(DEV_USB, cmd, buff);
-    }
+        case DEV_SD:
+            return sd_disk_ioctl(DEV_SD, cmd, buff);
 
-    return RES_PARERR;
+#if MEDIUM == USB
+            case DEV_USB:
+            return usb_disk_ioctl(DEV_USB, cmd, buff);
+#endif
+
+        default:
+            return RES_PARERR;
+    }
 }

@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2024 Oliver Schmidt (https://a2retro.de/)
+Copyright (c) 2025 Oliver Schmidt (https://a2retro.de/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,17 @@ SOFTWARE.
 
 */
 
-#include <pico/stdlib.h>
-#include <pico/multicore.h>
-#include <tusb.h>
+#ifndef _USB_DISKIO_H
+#define _USB_DISKIO_H
 
-#include "board.h"
-#include "sp.h"
+DSTATUS usb_disk_initialize(BYTE pdrv);
 
-void main(void) {
-    multicore_launch_core1(board);
-    
-    stdio_init_all();
+DSTATUS usb_disk_status(BYTE pdrv);
 
-    tusb_init();
-    sp_init();
+DRESULT usb_disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count);
 
-    while (true) {
+DRESULT usb_disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count);
 
-#if MEDIUM == SD
-        tud_task();
-#elif MEDIUM == USB
-        tuh_task();
+DRESULT usb_disk_ioctl(BYTE pdrv, BYTE cmd, void* buff);
+
 #endif
-
-        sp_task();
-    }
-}
