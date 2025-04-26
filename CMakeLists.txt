@@ -18,20 +18,23 @@ endif ()
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-# Use FatFs coming with TinyUSB
+# http://elm-chan.org/fsw/ff/ requires ffconf.h to be
+# modified in order to set some configuration options 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${PICO_TINYUSB_PATH}/lib/fatfs/source)
+        fatfs/source
+        )
 target_sources(${PROJECT_NAME} PRIVATE
-        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ff.c
-        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ffsystem.c
-        ${PICO_TINYUSB_PATH}/lib/fatfs/source/ffunicode.c
+        fatfs/source/ff.c
+        fatfs/source/ffsystem.c
+        fatfs/source/ffunicode.c
         )
 
 # https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico requires
 # glue.c to be modified in order to allow multiple FatFs devices
 target_include_directories(${PROJECT_NAME} PRIVATE
         sd_spi/include
-        sd_spi/sd_driver)
+        sd_spi/sd_driver
+        )
 target_sources(${PROJECT_NAME} PRIVATE
         sd_spi/sd_driver/crc.c
         sd_spi/sd_driver/demo_logging.c
