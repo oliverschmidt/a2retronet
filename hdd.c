@@ -85,9 +85,9 @@ void hdd_init(void) {
 
     sd_card_t *sd_card = sd_get_by_num(0);
 
-    FRESULT fr = f_mount(&sd_card->fatfs, sd_card->pcName, 1);
+    FRESULT fr = f_mount(&sd_card->fatfs, "SD:", 1);
     if (fr != FR_OK) {
-        printf("f_mount(%s) error: %s (%d)\n", sd_card->pcName, FRESULT_str(fr), fr);
+        printf("f_mount(SD:) error: %s (%d)\n", FRESULT_str(fr), fr);
     }
 }
 

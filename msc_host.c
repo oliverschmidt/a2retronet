@@ -60,20 +60,15 @@ static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const*
     // Make sure the upcoming new default drive is actually used
     hdd_reset();
 
-    // For simplicity we only mount 1 LUN per device
-    char drive_path[3] = "0:";
-    drive_path[0] += dev_addr;
-
-    FRESULT fr = f_mount(&fatfs, drive_path, 1);
+    FRESULT fr = f_mount(&fatfs, "USB:", 1);
     if (fr != FR_OK) {
-        printf("f_mount(%s) error: %s (%d)\n", drive_path, FRESULT_str(fr), fr);
+        printf("f_mount(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
         return true;
     }
 
-    fr = f_chdrive(drive_path);
+    fr = f_chdrive("USB:");
     if (fr != FR_OK) {
-        printf("f_chdrive(%s) error: %s (%d)\n", drive_path, FRESULT_str(fr), fr);
-        return true;
+        printf("f_chdrive(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
     }
     return true;
 }
@@ -90,18 +85,13 @@ void tuh_msc_umount_cb(uint8_t dev_addr) {
     // Make sure the upcoming new default drive is actually used
     hdd_reset();
 
-    char drive_path[3] = "0:";
-    drive_path[0] += dev_addr;
-
-    FRESULT fr = f_unmount(drive_path);
+    FRESULT fr = f_unmount("USB:");
     if (fr != FR_OK) {
-        printf("f_unmount(%s) error: %s (%d)\n", drive_path, FRESULT_str(fr), fr);
+        printf("f_unmount(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
     }
 
-    drive_path[0] = '0';
-
-    fr = f_chdrive(drive_path);
+    fr = f_chdrive("SD:");
     if (fr != FR_OK) {
-        printf("f_chdrive(%s) error: %s (%d)\n", drive_path, FRESULT_str(fr), fr);
+        printf("f_chdrive(SD:) error: %s (%d)\n", FRESULT_str(fr), fr);
     }
 }
