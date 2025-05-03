@@ -115,15 +115,18 @@ static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
     } else {
         if (params[SP_PARAM_CODE] == SP_STATUS_STS ||
             params[SP_PARAM_CODE] == SP_STATUS_DIB) {
-            if (hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
-                return SP_BUSERR;
+            bool status = params[SP_PARAM_CODE] == SP_STATUS_STS;
+            if (!hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
+                stat_list[2 + 0] = hdd_protected(params[SP_PARAM_UNIT] - 1)
+                                 ? 0b11110100   // block, write, read, online, protected
+                                 : 0b11110000;  // block, write, read, online
+            } else {
+                stat_list[2 + 0] = 0b11100000;  // block, write, read
+                stat_list[2 + 1] = 0x00;        // blocks low
+                stat_list[2 + 2] = 0x00;        // blocks mid
             }
-            stat_list[2 + 0] = hdd_protected(params[SP_PARAM_UNIT] - 1)
-                             ? 0b11110100   // block, write, read, online, protected
-                             : 0b11110000;  // block, write, read, online
-            stat_list[2 + 3] = 0x00;        // blocks high
-
-            if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
+            stat_list[2 + 3] = 0x00;    // blocks high
+            if (status) {
                 stat_list[0] = 4;   // size header low
                 stat_list[1] = 0;   // size header high                    
             } else {
