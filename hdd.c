@@ -42,6 +42,7 @@ SOFTWARE.
 #define WRITE_PROT  0x2B
 
 static FIL image[DRIVES];
+static bool prot[DRIVES];
 
 static uint16_t get_blocks(int drive) {
     FSIZE_t size = f_size(&image[drive]);
@@ -54,7 +55,9 @@ static uint16_t get_blocks(int drive) {
 
         FRESULT fr = f_open(&image[drive], name, FA_OPEN_EXISTING | FA_READ | FA_WRITE);
         if (fr == FR_DENIED) {
+            printf("  Write-Protected\n");
             fr = f_open(&image[drive], name, FA_OPEN_EXISTING | FA_READ);
+            prot[drive] = true;
         }
         if (fr != FR_OK) {
             printf("f_open(%s) error: %s (%d)\n", name, FRESULT_str(fr), fr);
@@ -105,11 +108,16 @@ void hdd_reset(void) {
         }
 
         memset(&image[drive], 0, sizeof(image[drive]));
+        prot[drive] = false;
     }
 }
 
+bool hdd_protected(uint8_t drive) {
+    return prot[drive];
+}
+
 uint8_t hdd_status(uint8_t drive, uint8_t *data) {
-    printf("HDD Status(Drive=$%02X)\n", drive);
+//    printf("HDD Status(Drive=%d)\n", drive);
 
     uint16_t blocks = get_blocks(drive);
 
@@ -124,7 +132,7 @@ uint8_t hdd_status(uint8_t drive, uint8_t *data) {
 }
 
 uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
-//    printf("HDD Read(Drive=$%02X,Block=$%04X)\n", drive, block);
+//    printf("HDD Read(Drive=%d,Block=$%04X)\n", drive, block);
 
     if (!seek_block(drive, block)) {
         return IO_ERROR;
@@ -142,7 +150,7 @@ uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
 
 
 uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
-//    printf("HDD Write(Drive=$%02X,Block=$%04X)\n", drive, block);
+//    printf("HDD Write(Drive=d,Block=$%04X)\n", drive, block);
 
     if (!seek_block(drive, block)) {
         return IO_ERROR;

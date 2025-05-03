@@ -118,7 +118,9 @@ static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
             if (hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
                 return SP_BUSERR;
             }
-            stat_list[2 + 0] = 0b11110000;  // block, write, read, online
+            stat_list[2 + 0] = hdd_protected(params[SP_PARAM_UNIT] - 1)
+                             ? 0b11110100   // block, write, read, online, protected
+                             : 0b11110000;  // block, write, read, online
             stat_list[2 + 3] = 0x00;        // blocks high
 
             if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
