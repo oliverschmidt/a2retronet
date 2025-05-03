@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _SP_H
 #define _SP_H
 
-extern volatile uint8_t  sp_status;
+extern volatile uint8_t  sp_control;
 extern volatile uint8_t  sp_buffer[1024];
 extern volatile uint16_t sp_read_offset;
 extern volatile uint16_t sp_write_offset;

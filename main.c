@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
+#include <hardware/clocks.h>
 #include <tusb.h>
 
 #include "board.h"
@@ -33,6 +34,8 @@ SOFTWARE.
 
 void main(void) {
     multicore_launch_core1(board);
+
+    set_sys_clock_khz(150000, false);
     
     stdio_init_all();
 

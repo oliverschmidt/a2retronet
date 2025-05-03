@@ -29,17 +29,19 @@ SOFTWARE.
 
 LOC0    := $00
 LOC1    := $01
-CMD     := $42          ; DISK DRIVER COMMAND
-UNIT    := $43          ; DISK DRIVER UNIT
-BUFL    := $44          ; DISK DRIVER BUFFER
-BUFH    := $45
-BLOCKL  := $46          ; DISK DRIVER BLOCK
+CMD     := $42          ; PRODOS COMMAND
+UNIT    := $43          ; PRODOS UNIT
+ADDRL   := $44          ; PRODOS / SMARTPORT BUFFER ADDRESS
+ADDRH   := $45
+BLOCKL  := $46          ; PRODOS BLOCK
 BLOCKH  := $47
+SIZEL   := $46          ; SMARTPORT BUFFER SIZE
+SIZEH   := $47
 
 MSLOT   := $07F8        ; BUFFER FOR HI SLOT ADDR (SCN)
 
-DATA    := $C088        ; DATA REG
-STAT    := $C089        ; STATUS REG
+DATA    := $CFFD        ; DATA REG
+CTRL    := $CFFE        ; CONTROL REG
 
 COUT    := $FDED        ; CHARACTER OUT (THRU CSW)
 SETKBD  := $FE89        ; SETS KSW TO APPLE KEYBOARD
@@ -50,116 +52,30 @@ HOME    := $FC58        ; CLEAR SCREEN AND HOME CURSOR
 BASIC   := $E000        ; BASIC INTERPRETER COLD START
 
 .REPEAT 8, SLOT
-.SCOPE
+.IF SLOT
+    .SCOPE
+.ENDIF
 
         .ORG $C000|$0100*SLOT
 
-        CPX #$20        ; $Cn01:$20
-        LDX #$00        ; $Cn03:$00
-        CPX #$03        ; $Cn05:$03
-        CPX #$3C        ; $Cn07:$3C
+        CPX #$20        ; $CN01:$20
+        LDX #$00        ; $CN03:$00
+        CPY #$03        ; $CN05:$03
+        LDY #$00        ; $CN07:$00
+        BEQ SHARED      ; ALWAYS
 
-        STX BLOCKL
-        STX BLOCKH
-        STX BUFL
-        INX             ; 1 MEANS READ
-        STX CMD
-        LDX #>$0800
-        STX BUFH
-        LDX #$10*SLOT   ; DRIVE 1
-        STX UNIT
-        JSR DRIVER      ; READ BLOCK 0 FROM DRIVE 1 TO $0800
-        BCS FAILURE
-        LDX $0800       ; NUMBER OF DISK II SECTORS TO READ
-        DEX
-        BNE FAILURE     ; ... MUST BE 1
-        LDX $0801       ; FIRST OPCODE
-        BEQ FAILURE     ; ... MUSTN'T BE BRK
-        LDX #$10*SLOT   ; DRIVE 1
-        JMP $0801       ; GO FOR IT
+DRIVER  ; PRODOS DRIVER ENTRY
+        CLC
+        BCC MARK
+        SEC             ; SMARTPORT DRIVER ENTRY
+MARK    LDX #$FF
+        ; FALL THROUGH
 
-FAILURE LDX LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
-        BNE ERREXIT     ; ... MUST POINT TO A SLOT ROM START
-        LDX LOC1        ; POTENTIAL AUTOSTART SCAN ROM PTR HI
-        CPX MSLOT       
-        BNE ERREXIT     ; ... MUST POINT TO CURRENT SLOT ROM
-        CPX #>*
-        BNE ERREXIT     ; ... MUST POINT TO THIS SLOT ROM
-        JMP SLOOP       ; LOOKS LIKE AUTOSTART SCAN SO CONTINUE SCAN
-
-ERREXIT JSR SETSCR
-        JSR SETKBD
-        JSR SETTXT
-        JSR HOME
-        LDX #$08        ; 'HDD ERROR'
-:       LDA ERRTEXT,X
-        JSR COUT
-        DEX
-        BPL :-
-        JMP BASIC
-
-ERRTEXT .BYTE 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$80, 'H'|$80
-
-DRIVER  LDA CMD
-        STA DATA|$10*SLOT
-        LDA UNIT
-        STA DATA|$10*SLOT
-        LDA BLOCKL
-        STA DATA|$10*SLOT
-        LDA BLOCKH
-        STA DATA|$10*SLOT
-
-        LDY CMD         ; STATUS?
-        BNE NOSTATUS
-
-        ; PRODOS STATUS COMMAND
-        JSR RETCODE     ; GET RETURN CODE
-        BNE :+          ; ERROR?
-        LDX DATA|$10*SLOT ; SIZE LO
-        LDY DATA|$10*SLOT ; SIZE HI
-:       CMP #$01        ; SUCCESS?
-        RTS
-
-NOSTATUS DEY            ; READ?
-        BNE NOREAD
-
-        ; PRODOS READ COMMAND
-        JSR RETCODE     ; GET RETURN CODE
-        BNE :+          ; ERROR?
-        JSR RDBLOCK     ; READ 512 BYTE BLOCK
-        LDA #$00        ; SUCCESS
-:       CMP #$01        ; SUCCESS?
-        RTS
-
-        ; PRODOS WRITE COMMAND
-NOREAD  JSR WRBLOCK     ; WRITE 512 BYTE BLOCK
-        JSR RETCODE     ; GET RETURN CODE
-        CMP #$01        ; SUCCESS?
-        RTS
-
-RETCODE STA STAT|$10*SLOT
-:       LDA STAT|$10*SLOT
-        BPL :-
-        LDA DATA|$10*SLOT ; RETURN CODE
-        RTS
-
-RDBLOCK LDY #$00
-        JSR RDPAGE
-        INC BUFH
-RDPAGE  LDA DATA|$10*SLOT
-        STA (BUFL),Y
-        INY
-        BNE RDPAGE
-        RTS
-
-WRBLOCK LDY #$00
-        JSR WRPAGE
-        INC BUFH
-WRPAGE  LDA (BUFL),Y
-        STA DATA|$10*SLOT
-        INY
-        BNE WRPAGE
-        RTS
+SHARED  ; SHARED EXPANSION ROM ENTRY
+        LDA #>*
+        STA $07F8       ; MSLOT
+        BIT $CFFF       ; CLRROM
+        JMP COMMON
 
         .RES $0100-4-<* ; THE 4 BYTES BELOW GO TO THE END OF THE SLOT ROM
 
@@ -167,5 +83,379 @@ WRPAGE  LDA (BUFL),Y
         .BYTE $F7       ; STATUS BYTE
         .BYTE <DRIVER
 
-.ENDSCOPE
+.IF SLOT
+    .ENDSCOPE
+.ENDIF
 .ENDREP
+
+        .ORG $C800
+
+        .BYTE $00
+
+;;;;;;;;;;;;;;;;;;;
+; PRODOS COMMANDS ;
+;;;;;;;;;;;;;;;;;;;
+
+PDSTS   ; EXECUTE AND GET RETURN CODE
+        JSR RETCODE
+        BNE PDDONE      ; ERROR?
+
+        LDX DATA        ; SIZE LO
+        LDY DATA        ; SIZE HI
+PDOKAY  LDA #$00        ; SUCCESS
+PDDONE  CMP #$01        ; SUCCESS?
+        RTS
+
+PDRD    ; EXECUTE AND GET RETURN CODE
+        JSR RETCODE
+        BNE PDDONE      ; ERROR?
+
+        ; READ BLOCK
+        JSR RDBLOCK
+        BEQ PDOKAY      ; ALWAYS
+
+PDWR    ; WRITE BLOCK
+        JSR WRBLOCK
+
+        ; EXECUTE AND GET RETURN CODE
+        JSR RETCODE
+        CMP #$01        ; SUCCESS?
+        RTS
+
+;;;;;;;;;;;;;;;;;;;;;;
+; SMARTPORT COMMANDS ;
+;;;;;;;;;;;;;;;;;;;;;;
+
+STATUS  ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        BNE RETURN      ; ERROR?
+
+        ; READ STATUS LIST SIZE
+        LDA DATA
+        STA SIZEL
+        LDA DATA
+        STA SIZEH
+
+        ; READ STATUS LIST
+        LDY #$02        ; OFFSET OF STATUS LIST ADDRESS
+        JSR SETADDR
+        JSR RDBUF
+        LDX SIZEL
+        LDY SIZEH
+        JMP RETURN
+
+READBL  ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        BNE RETURN      ; ERROR?
+
+        ; READ BLOCK
+        LDY #$02        ; OFFSET OF BUFFER ADDRESS
+        JSR SETADDR
+        JSR RDBLOCK
+        JMP RETURN
+
+WRITEBL ; WRITE BLOCK
+        LDY #$02        ; OFFSET OF BUFFER ADDRESS
+        JSR SETADDR
+        JSR WRBLOCK
+        ; FALL THROUGH
+
+FORMAT  ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        JMP RETURN
+
+CONTROL ; WRITE CONTROL LIST
+        LDY #$02        ; OFFSET OF CONTROL LIST ADDRSS
+        JSR SETADDR
+        LDY #$00        ; OFFSET OF CONTROL LIST SIZE
+        JSR SETSIZE
+        LDX #$02        ; SIZE OF CONTROL LIST SIZE
+        JSR INCADDR
+        JSR WRBUF
+        ; FALL THROUGH
+
+INIT    ; FALL THROUGH
+
+OPEN    ; FALL THROUGH
+
+CLOSE   ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        JMP RETURN
+
+READ    ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        BNE RETURN      ; ERROR?
+
+        ; READ BUFFER
+        LDY #$04        ; OFFSET OF BYTE COUNT
+        JSR SETSIZE
+        LDY #$02        ; OFFSET OF BUFFER ADDRESS
+        JSR SETADDR
+        JSR RDBUF
+        JMP RETURN
+
+WRITE   ; WRITE BUFFER
+        LDY #$04        ; OFFSET OF BYTE COUNT
+        JSR SETSIZE
+        LDY #$02        ; OFFSET OF BUFFER ADDRESS
+        JSR SETADDR
+        JSR WRBUF
+
+        ; EXECUTE AND GET STATUS
+        JSR GETSTS
+        ; FALL THROUGH
+
+RETURN  ; RESTORE ZEROPAGE LOCATIONS
+        PLA
+        STA ADDRL
+        PLA
+        STA ADDRH
+        PLA
+        STA SIZEL
+        PLA
+        STA SIZEH
+        PLA             ; STATUS
+        CMP #$01        ; SET CARRY
+        RTS
+
+;;;;;;;;;;;;;;;;;;
+; COMMON HANDLER ;
+;;;;;;;;;;;;;;;;;;
+
+COMMON  INX             ; FORCE Z
+        BNE BOOT
+        BCC PRODOS
+        JMP SMARTPORT
+
+;;;;;;;;;;;;;;;;
+; BOOT HANDLER ;
+;;;;;;;;;;;;;;;;
+
+BOOT    STX CMD         ; X IS 1 -> READ
+        LDX #>$0800
+        ASL             ; A IS $CN
+        ASL
+        ASL
+        ASL
+        STA UNIT        ; DRIVE 1
+        STY ADDRL       ; Y IS 0
+        STX ADDRH
+        STY BLOCKL
+        STY BLOCKH
+        JSR PRODOS      ; CALL PRODOS HANDLER
+        BCS FAILURE
+        LDY $0800       ; NUMBER OF DISK II SECTORS TO READ
+        DEY
+        BNE FAILURE     ; ... MUST BE 1
+        LDY $0801       ; FIRST OPCODE
+        BEQ FAILURE     ; ... MUSTN'T BE BRK
+        LDX UNIT
+        JMP $0801       ; GO FOR IT
+
+FAILURE LDY LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
+        BNE ERREXIT     ; ... MUST POINT TO A SLOT ROM START
+        LDY LOC1        ; POTENTIAL AUTOSTART SCAN ROM PTR HI
+        CPY MSLOT
+        BNE ERREXIT     ; ... MUST POINT TO CURRENT SLOT ROM
+        JMP SLOOP       ; LOOKS LIKE AUTOSTART SCAN SO CONTINUE SCAN
+
+ERREXIT JSR SETSCR
+        JSR SETKBD
+        JSR SETTXT
+        JSR HOME
+        LDY #$08        ; 'HDD ERROR'
+ERR     LDA ERRTEXT,Y
+        JSR COUT
+        DEY
+        BPL ERR
+        JMP BASIC
+
+ERRTEXT .BYTE 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$80, 'H'|$80
+
+;;;;;;;;;;;;;;;;;;
+; PRODOS HANDLER ;
+;;;;;;;;;;;;;;;;;;
+
+PRODOS: ; WRITE PARAMETERS
+        LDY CMD
+        STY DATA
+        LDA UNIT
+        STA DATA
+        LDA BLOCKL
+        STA DATA
+        LDA BLOCKH
+        STA DATA
+
+        ; DISPATCH COMMAND
+        LDA #>$C800
+        PHA
+        LDA PDCMD,Y
+        PHA
+        RTS
+
+PDCMD   .BYTE <PDSTS-1, <PDRD-1, <PDWR-1
+
+;;;;;;;;;;;;;;;;;;;;;
+; SMARTPORT HANDLER ;
+;;;;;;;;;;;;;;;;;;;;;
+
+SMARTPORT:
+        ; SAVE ZEROPAGE LOCATIONS AND RESERVE STATUS SLOT
+        TSX
+        LDY #$04
+SAVE    LDA ADDRL,Y
+        PHA
+        DEY
+        BPL SAVE
+
+        ; GET ADDRESS OF PARAMETERS AND ADJUST STACK
+        CLC
+        INX
+        LDA $0100,X
+        STA ADDRL
+        ADC #<$0003     ; SIZE OF PARAMETERS
+        STA $0100,X 
+        INX
+        LDA $0100,X
+        STA ADDRH
+        ADC #>$0003     ; SIZE OF PARAMETERS
+        STA $0100,X
+
+        ; PREPARE COMMAND DISPATCH
+        LDA #>$C800
+        PHA
+        LDY #$01+$00    ; PUSH OFFSET + OFFSET OF COMMAND NUMBER
+        LDA (ADDRL),Y
+        TAX
+        LDA SPCMD,X
+        PHA
+
+        ; WRITE COMMAND NUMBER
+        STX DATA
+
+        ; GET COMMAND LIST ADDRESS
+        LDY #$01+$01    ; PUSH OFFSET + OFFSET OF COMMAND LIST ADDRESS
+        JSR SETADDR
+
+        ; WRITE COMMAND LIST
+        LDA #<$0009     ; SIZE OF LARGEST COMMAND LIST
+        STA SIZEL
+        LDA #>$0009     ; SIZE OF LARGEST COMMAND LIST
+        STA SIZEH
+        JSR WRBUF
+
+        ; DISPATCH COMMAND
+        RTS
+
+SPCMD   .BYTE <STATUS-1, <READBL-1, <WRITEBL-1, <FORMAT-1, <CONTROL-1
+        .BYTE <INIT  -1, <OPEN  -1, <CLOSE  -1, <READ  -1, <WRITE  -1
+
+SETSIZE ; SET 16-BIT BUFFER SIZE
+        LDA (ADDRL),Y
+        STA SIZEL
+        INY
+        LDA (ADDRL),Y
+        STA SIZEH
+        RTS
+
+SETADDR ; SET BUFFER ADDRESS
+        LDA (ADDRL),Y
+        TAX
+        INY
+        LDA (ADDRL),Y
+        STA ADDRH
+        STX ADDRL
+        RTS
+
+INCADDR ; INCREMENT BUFFER ADDRESS
+        CLC
+        LDA ADDRL
+        ADC ZERO,X
+        STA ADDRL
+        BCC NOINC
+        INC ADDRH
+NOINC   RTS
+
+ZERO    .BYTE $00, $01, $02
+
+GETSTS  ; EXECUTE SMARTPORT COMMAND AND GET STATUS
+        LDA #$02        ; SMARTPORT
+        JSR WRCMD
+
+        ; SAVE STATUS IN STACK SLOT
+        TSX
+        TAY
+        TXA
+        CLC
+        ADC #$07        ; OFFSET OF STACK SLOT
+        TAX
+        TYA
+        STA $0100,X
+        RTS
+
+RETCODE ; EXECUTE PRODOS COMMAND AND GET RETURN CODE
+        LDA #$01        ; PRODOS
+        ; FALL THROUGH
+
+WRCMD   ; WRITE COMMAND REG AND READ RESPONSE
+        STA CTRL
+WAIT    LDA CTRL
+        BPL WAIT
+        LDA DATA
+        RTS
+
+RDBUF   ; READ BUFFER
+        LDY #$00
+        LDX SIZEH
+        BEQ RDREST
+RDFULL  JSR RDPAGE
+        INC ADDRH
+        DEX
+        BNE RDFULL
+RDREST  LDX SIZEL
+        BEQ RDDONE
+RDMORE  LDA DATA
+        STA (ADDRL),Y
+        INY
+        DEX
+        BNE RDMORE
+RDDONE  RTS
+
+WRBUF   ; WRITE BUFFER
+        LDY #$00
+        LDX SIZEH
+        BEQ WRREST
+WRFULL  JSR WRPAGE
+        INC ADDRH
+        DEX
+        BNE WRFULL
+WRREST  LDX SIZEL
+        BEQ WRDONE
+WRMORE  LDA (ADDRL),Y
+        STA DATA
+        INY
+        DEX
+        BNE WRMORE
+WRDONE  RTS
+
+RDBLOCK ; READ 512-BYTE BLOCK
+        LDY #$00
+        JSR RDPAGE
+        INC ADDRH
+RDPAGE  LDA DATA
+        STA (ADDRL),Y
+        INY
+        BNE RDPAGE
+        RTS
+
+WRBLOCK ; WRITE 512-BYTE BLOCK
+        LDY #$00
+        JSR WRPAGE
+        INC ADDRH
+WRPAGE  LDA (ADDRL),Y
+        STA DATA
+        INY
+        BNE WRPAGE
+        RTS
+
+        .RES $D000-*

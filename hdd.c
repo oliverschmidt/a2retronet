@@ -34,7 +34,7 @@ SOFTWARE.
 
 #include "hdd.h"
 
-#define DRIVES      2
+#define DRIVES      8
 #define BLOCK_SIZE  512
 
 #define SUCCESS     0x00
@@ -108,71 +108,61 @@ void hdd_reset(void) {
     }
 }
 
-void hdd_status(uint8_t unit) {
-    printf("HDD Status(Unit=$%02X)\n", unit);
+uint8_t hdd_status(uint8_t drive, uint8_t *data) {
+    printf("HDD Status(Drive=$%02X)\n", drive);
 
-    int drive = unit >> 7;
     uint16_t blocks = get_blocks(drive);
 
     if (!blocks) {
-        sp_buffer[0] = IO_ERROR;
-        return;
+        return IO_ERROR;
     }
 
-    sp_buffer[0] = SUCCESS;
-    sp_buffer[1] = blocks % 0x100;
-    sp_buffer[2] = blocks / 0x100;
+    data[0] = blocks % 0x100;
+    data[1] = blocks / 0x100;
+
+    return SUCCESS;
 }
 
-void hdd_read(uint8_t unit, uint16_t block) {
-//    printf("HDD Read(Unit=$%02X,Block=$%04X)\n", unit, block);
-
-    int drive = unit >> 7;
+uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
+//    printf("HDD Read(Drive=$%02X,Block=$%04X)\n", drive, block);
 
     if (!seek_block(drive, block)) {
-        sp_buffer[0] = IO_ERROR;
-        return;
+        return IO_ERROR;
     }
 
     UINT br;
-    FRESULT fr = f_read(&image[drive], (void *)&sp_buffer[1], BLOCK_SIZE, &br);
+    FRESULT fr = f_read(&image[drive], data, BLOCK_SIZE, &br);
     if (fr != FR_OK || br != BLOCK_SIZE) {
-        sp_buffer[0] = IO_ERROR;
         printf("f_read(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
-        return;
+        return IO_ERROR;
     }
 
-    sp_buffer[0] = SUCCESS;
+    return SUCCESS;
 }
 
-void hdd_write(uint8_t unit, uint16_t block, const uint8_t *data) {
-//    printf("HDD Write(Unit=$%02X,Block=$%04X)\n", unit, block);
 
-    int drive = unit >> 7;
+uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
+//    printf("HDD Write(Drive=$%02X,Block=$%04X)\n", drive, block);
 
     if (!seek_block(drive, block)) {
-        sp_buffer[0] = IO_ERROR;
-        return;
+        return IO_ERROR;
     }
 
     UINT bw;
     FRESULT fr = f_write(&image[drive], data, BLOCK_SIZE, &bw);
     if (fr != FR_OK || bw != BLOCK_SIZE) {
         if (fr == FR_DENIED) {
-            sp_buffer[0] = WRITE_PROT;
-            return;
+            return WRITE_PROT;
         }
-        sp_buffer[0] = IO_ERROR;
         printf("f_write(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
-        return;
+        return IO_ERROR;
     }
 
     fr = f_sync(&image[drive]);
     if (fr != FR_OK) {
-        sp_buffer[0] = IO_ERROR;
         printf("f_sync(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
-        return;
+        return IO_ERROR;
     }
 
-    sp_buffer[0] = SUCCESS;
+    return SUCCESS;
 }

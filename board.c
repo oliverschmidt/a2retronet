@@ -32,8 +32,11 @@ SOFTWARE.
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
+static volatile bool active;
+
 static void __time_critical_func(reset)(bool asserted) {
     if (asserted) {
+        active = false;
         sp_reset();
     }
 }
@@ -52,33 +55,37 @@ void __time_critical_func(board)(void) {
         uint32_t read = pico & 0x1000;      // R/W
 
         if (read) {
-            if (!io) {  // DEVSEL
-                switch (addr & 0xF) {
-                    case 0x8:  // DATA
+            if (io && (!strb || active)) {
+                switch (addr) {
+                    case 0x0FFD:    // DATA
                         a2pico_putdata(pio0, sp_buffer[sp_read_offset]);
                         sp_read_offset++;
                         break;
-                    case 0x9:  // STATUS
-                        a2pico_putdata(pio0, sp_status);
+                    case 0x0FFE:    // CONTROL
+                        a2pico_putdata(pio0, sp_control);
                         break;
-                }
-            } else {
-                if (!strb) {  // IOSEL
-                    a2pico_putdata(pio0, firmware[addr]);
+                    case 0x0FFF:
+                        break;
+                    default:
+                        a2pico_putdata(pio0, firmware[addr]);
                 }
             }
         } else {
             uint32_t data = a2pico_getdata(pio0);
-            if (!io) {  // DEVSEL
-                switch (addr & 0xF) {
-                    case 0x8:  // DATA
-                        sp_buffer[sp_write_offset++] = data;
-                        break;
-                    case 0x9:  // STATUS
-                        sp_status = 0x01;
-                        break;
-                }
+            switch (addr) {
+                case 0x0FFD:    // DATA
+                    sp_buffer[sp_write_offset++] = data;
+                    break;
+                case 0x0FFE:    // CONTROL
+                    sp_control = data;
+                    break;
             }
+        }
+
+        if (io && !strb) {
+            active = true;
+        } else if (addr == 0x0FFF) {
+            active = false;
         }
     }
 }

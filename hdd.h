@@ -31,10 +31,10 @@ void hdd_init(void);
 
 void hdd_reset(void);
 
-void hdd_status(uint8_t unit);
+uint8_t hdd_status(uint8_t drive, uint8_t *data);
 
-void hdd_read(uint8_t unit, uint16_t block);
+uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data);
 
-void hdd_write(uint8_t unit, uint16_t block, const uint8_t *data);
+uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data);
 
 #endif
