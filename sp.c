@@ -24,6 +24,7 @@ SOFTWARE.
 
 */
 
+#include <string.h>
 #include <stdio.h>
 #include <pico/stdlib.h>
 
@@ -101,28 +102,41 @@ void __time_critical_func(sp_reset)(void) {
 }
 
 static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
-    if (params[SP_PARAM_CODE] != SP_STATUS_STS) {
-        return SP_BADCTL;
-    }
-    if (params[SP_PARAM_UNIT] == 0) {
-        stat_list[0] = 0x08;            // size header low
-        stat_list[1] = 0x00;            // size header high
-        stat_list[2 + 0] = 0x08;        // 8 devices
-        stat_list[2 + 1] = 0b01000000;  // no interrupt sent
-        stat_list[2 + 2] = 0x00;
-        stat_list[2 + 3] = 0x00;
-        stat_list[2 + 4] = 0x00;
-        stat_list[2 + 5] = 0x00;
-        stat_list[2 + 6] = 0x00;
-        stat_list[2 + 7] = 0x00;
-    } else {
-        if (hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
-            return SP_BUSERR;
+    if (!params[SP_PARAM_UNIT]) {
+        if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
+            stat_list[2 + 0] = 0x08;        // 8 devices
+            stat_list[2 + 1] = 0b01000000;  // no interrupt sent
+            memset(&stat_list[2 + 2], 0x00, 6);
+            stat_list[0] = 8;   // size header low
+            stat_list[1] = 0;   // size header high
+        } else {
+            return SP_BADCTL;
         }
-        stat_list[0] = 0x04;            // size header low
-        stat_list[1] = 0x00;            // size header high
-        stat_list[2 + 0] = 0b11111000;  // block, write, read, online, no format
-        stat_list[2 + 3] = 0x00;        // blocks high
+    } else {
+        if (params[SP_PARAM_CODE] == SP_STATUS_STS ||
+            params[SP_PARAM_CODE] == SP_STATUS_DIB) {
+            if (hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
+                return SP_BUSERR;
+            }
+            stat_list[2 + 0] = 0b11110000;  // block, write, read, online
+            stat_list[2 + 3] = 0x00;        // blocks high
+
+            if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
+                stat_list[0] = 4;   // size header low
+                stat_list[1] = 0;   // size header high                    
+            } else {
+                stat_list[2 +  4] = 0x0A;   // id string length
+                memcpy(&stat_list[2 + 5], "A2RETRONET      ", 16);
+                stat_list[2 + 21] = 0x02;   // hard disk
+                stat_list[2 + 22] = 0x00;   // removable
+                stat_list[2 + 23] = 0x01;   // firmware version low
+                stat_list[2 + 24] = 0x00;   // firmware version high
+                stat_list[0] = 25;  // size header low
+                stat_list[1] = 0;   // size header high    
+            }
+        } else {
+            return SP_BADCTL;
+        }
     }
     return SP_SUCCESS;
 }
@@ -170,22 +184,48 @@ void sp_task(void) {
         case CONTROL_SP:
             switch (sp_buffer[SP_I_CMD]) {
             case SP_CMD_STATUS:
+//                printf("SP CmdStatus(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                 sp_buffer[SP_O_RETVAL] = sp_stat((uint8_t*)&sp_buffer[SP_I_PARAMS],
                                                  (uint8_t*)&sp_buffer[SP_O_BUFFER]);
                 break;
             case SP_CMD_READBLK:
+//                printf("SP CmdReadBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                 sp_buffer[SP_O_RETVAL] = sp_readblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
                                                     (uint8_t*)&sp_buffer[SP_O_BUFFER]);
                 break;
             case SP_CMD_WRITEBLK:
+//                printf("SP CmdWriteBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                 sp_buffer[SP_O_RETVAL] = sp_writeblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
                                                      (uint8_t*)&sp_buffer[SP_I_BUFFER]);
                 break;
+            case SP_CMD_FORMAT:
+                printf("SP CmdFormat(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
+            case SP_CMD_CONTROL:
+                printf("SP CmdControl(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
             case SP_CMD_INIT:
+                printf("SP CmdInit(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                 sp_buffer[SP_O_RETVAL] = SP_SUCCESS;
                 break;
-            default:
+            case SP_CMD_OPEN:
+                printf("SP CmdOpen(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                 sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
+            case SP_CMD_CLOSE:
+                printf("SP CmdClose(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
+            case SP_CMD_READ:
+                printf("SP CmdRead(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
+            case SP_CMD_WRITE:
+                printf("SP CmdWrite(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                break;
             }
             break;
     }
