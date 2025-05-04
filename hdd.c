@@ -34,33 +34,100 @@ SOFTWARE.
 
 #include "hdd.h"
 
-#define DRIVES      8
+#define MAX_DRIVES    8
+#define MAX_PATH    256
 #define BLOCK_SIZE  512
+
+#define SECTION_NONE    0
+#define SECTION_DRIVES  1
 
 #define SUCCESS     0x00
 #define IO_ERROR    0x27
 #define WRITE_PROT  0x2B
 
-static FIL image[DRIVES];
-static bool prot[DRIVES];
+static uint8_t drives;
+
+static char path[MAX_DRIVES][MAX_PATH];
+static FIL image[MAX_DRIVES];
+static bool prot[MAX_DRIVES];
+
+static void get_config() {
+    if (drives) {
+        return;
+    }
+    drives = MAX_DRIVES;
+
+    FIL text;
+    FRESULT fr = f_open(&text, "A2retroNET.txt", FA_OPEN_EXISTING | FA_READ);
+    if (fr != FR_OK) {
+        printf("f_open(A2retroNET.txt) error: %s (%d)\n", FRESULT_str(fr), fr);
+        return;
+    }
+
+    int section = SECTION_NONE;
+    while (true) {
+        char line[MAX_PATH];
+        char *success = f_gets(line, sizeof(line), &text);
+        if (!success) {
+            if (f_error(&text)) {
+                printf("f_gets(A2retroNET.txt) error\n");
+            }
+            break;
+        }
+        int len = strlen(line);
+        if (line[len - 1] == '\n') {
+            line[len - 1] = '\0';
+        }
+        if (line[0] == '#') {
+            continue;
+        }
+        if (line[0] == '[') {
+            section = SECTION_NONE; 
+            if (strncasecmp(line, "[drives]", 8) == 0) {
+                section = SECTION_DRIVES;
+            }
+        }
+        switch (section) {
+            case SECTION_DRIVES:
+                if (strncasecmp(line, "number=", 7) == 0) {
+                    if (line[7] < '2' || line[7] > '0' + MAX_DRIVES || line[7] % 2) {
+                        continue;
+                    }
+                    drives = line[7] - '0';
+                }
+                if (line[0] < '1' || line[0] > '0' + MAX_DRIVES || line[1] != '=') {
+                    continue;
+                }
+                int drive = line[0] - '1';
+                strcpy(path[drive], &line[2]);
+                break;
+        }
+    }
+    f_close(&text);
+
+    printf("[drives]\n");
+    printf("number=%d\n", drives);
+    for (int drive = 0; drive < drives; drive++) {
+        printf("%d=%s\n", drive + 1, path[drive]);
+    }
+}
 
 static uint16_t get_blocks(int drive) {
     FSIZE_t size = f_size(&image[drive]);
 
     if (!size) {
-        static char name[12];
-        sprintf(name, "drive%d.po", drive + 1);
+        get_config();
 
-        printf("HDD Open(Drive=%d,File=%s)\n", drive, name);
+        printf("HDD Open(Drive=%d,File=%s)\n", drive, path[drive]);
 
-        FRESULT fr = f_open(&image[drive], name, FA_OPEN_EXISTING | FA_READ | FA_WRITE);
+        FRESULT fr = f_open(&image[drive], path[drive], FA_OPEN_EXISTING | FA_READ | FA_WRITE);
         if (fr == FR_DENIED) {
             printf("  Write-Protected\n");
-            fr = f_open(&image[drive], name, FA_OPEN_EXISTING | FA_READ);
+            fr = f_open(&image[drive], path[drive], FA_OPEN_EXISTING | FA_READ);
             prot[drive] = true;
         }
         if (fr != FR_OK) {
-            printf("f_open(%s) error: %s (%d)\n", name, FRESULT_str(fr), fr);
+            printf("f_open(%s) error: %s (%d)\n", path[drive], FRESULT_str(fr), fr);
         }
 
         size = f_size(&image[drive]);
@@ -95,7 +162,11 @@ void hdd_init(void) {
 }
 
 void hdd_reset(void) {
-    for (int drive = 0; drive < DRIVES; drive++) {
+    drives = 0;
+
+    for (int drive = 0; drive < MAX_DRIVES; drive++) {
+        path[drive][0] = '\0';
+
         if (!f_size(&image[drive])) {
             continue;
         }
@@ -110,6 +181,10 @@ void hdd_reset(void) {
         memset(&image[drive], 0, sizeof(image[drive]));
         prot[drive] = false;
     }
+}
+
+uint8_t hdd_drives(void) {
+    return drives;
 }
 
 bool hdd_protected(uint8_t drive) {

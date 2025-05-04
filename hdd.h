@@ -31,6 +31,8 @@ void hdd_init(void);
 
 void hdd_reset(void);
 
+uint8_t hdd_drives(void);
+
 bool hdd_protected(uint8_t drive);
 
 uint8_t hdd_status(uint8_t drive, uint8_t *data);

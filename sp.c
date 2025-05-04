@@ -104,7 +104,7 @@ void __time_critical_func(sp_reset)(void) {
 static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
     if (!params[SP_PARAM_UNIT]) {
         if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
-            stat_list[2 + 0] = 0x08;        // 8 devices
+            stat_list[2 + 0] = hdd_drives();
             stat_list[2 + 1] = 0b01000000;  // no interrupt sent
             memset(&stat_list[2 + 2], 0x00, 6);
             stat_list[0] = 8;   // size header low
