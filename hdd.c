@@ -103,7 +103,10 @@ static void get_config() {
                 break;
         }
     }
-    f_close(&text);
+    fr = f_close(&text);
+    if (fr != FR_OK) {
+        printf("f_close(A2retroNET.txt) error: %s (%d)\n", FRESULT_str(fr), fr);
+    }
 
     printf("[drives]\n");
     printf("number=%d\n", drives);
