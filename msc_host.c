@@ -25,7 +25,6 @@ SOFTWARE.
 */
 
 #include <tusb.h>
-#include <f_util.h>
 
 #include "hdd.h"
 
@@ -35,8 +34,6 @@ SOFTWARE.
 CFG_TUH_MEM_SECTION static struct {
     TUH_EPBUF_TYPE_DEF(scsi_inquiry_resp_t, inquiry);
 } scsi_resp;
-
-static FATFS fatfs;
 
 static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const* cb_data) {
     msc_cbw_t const* cbw = cb_data->cbw;
@@ -57,19 +54,7 @@ static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const*
     printf("  Block Count:%lu, Block Size:%lu\n", block_count, block_size);
     printf("  Disk Size:%" PRIu32 " MB\n", block_count / ((1024*1024) / block_size));
 
-    // Make sure the upcoming new default drive is actually used
-    hdd_reset();
-
-    FRESULT fr = f_mount(&fatfs, "USB:", 1);
-    if (fr != FR_OK) {
-        printf("f_mount(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
-        return true;
-    }
-
-    fr = f_chdrive("USB:");
-    if (fr != FR_OK) {
-        printf("f_chdrive(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
-    }
+    hdd_usb(true);
     return true;
 }
 
@@ -82,16 +67,5 @@ void tuh_msc_mount_cb(uint8_t dev_addr) {
 void tuh_msc_umount_cb(uint8_t dev_addr) {
     printf("MSC Unmount(Device=%d)\n", dev_addr);
 
-    // Make sure the upcoming new default drive is actually used
-    hdd_reset();
-
-    FRESULT fr = f_unmount("USB:");
-    if (fr != FR_OK) {
-        printf("f_unmount(USB:) error: %s (%d)\n", FRESULT_str(fr), fr);
-    }
-
-    fr = f_chdrive("SD:");
-    if (fr != FR_OK) {
-        printf("f_chdrive(SD:) error: %s (%d)\n", FRESULT_str(fr), fr);
-    }
+    hdd_usb(false);
 }

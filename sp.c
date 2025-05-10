@@ -160,6 +160,10 @@ void sp_task(void) {
         return;
     }
 
+    if (!hdd_mounted()) {
+        return;
+    }
+
 #ifdef PICO_DEFAULT_LED_PIN
     gpio_put(PICO_DEFAULT_LED_PIN, true);
 #endif

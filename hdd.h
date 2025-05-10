@@ -31,6 +31,10 @@ void hdd_init(void);
 
 void hdd_reset(void);
 
+void hdd_usb(bool);
+
+bool hdd_mounted(void);
+
 uint8_t hdd_drives(void);
 
 bool hdd_protected(uint8_t drive);
