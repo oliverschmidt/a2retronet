@@ -32,7 +32,8 @@ SOFTWARE.
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
-static volatile bool active;
+static volatile bool     active;
+static volatile uint32_t self;
 
 static void __time_critical_func(reset)(bool asserted) {
     if (asserted) {
@@ -84,8 +85,13 @@ void __time_critical_func(board)(void) {
 
         if (io && !strb) {
             active = true;
+            self   = addr;
         } else if (addr == 0x0FFF) {
             active = false;
         }
     }
+}
+
+uint8_t board_slot(void) {
+    return self >> 8;
 }

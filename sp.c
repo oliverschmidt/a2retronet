@@ -28,6 +28,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <pico/stdlib.h>
 
+#include "board.h"
 #include "hdd.h"
 
 #include "sp.h"
@@ -85,6 +86,14 @@ volatile uint8_t  sp_control;
 volatile uint8_t  sp_buffer[1024];
 volatile uint16_t sp_read_offset;
 volatile uint16_t sp_write_offset;
+
+static uint8_t unit_to_drive(uint8_t unit) {
+    uint8_t drive = unit >> 7;
+    if ((unit >> 4 & 0x07) != board_slot()) {
+        drive += 0x02;
+    } 
+    return drive;
+}
 
 void sp_init(void) {
     hdd_init();
@@ -173,68 +182,68 @@ void sp_task(void) {
 
         case CONTROL_PRODOS:
             switch (sp_buffer[PRODOS_I_CMD]) {
-            case PRODOS_CMD_STATUS:
-                sp_buffer[PRODOS_O_RETVAL] = hdd_status(sp_buffer[PRODOS_I_UNIT] >> 7,
-                                                        (uint8_t*)&sp_buffer[PRODOS_O_BUFFER]);
-                break;
-            case PRODOS_CMD_READ:
-                sp_buffer[PRODOS_O_RETVAL] = hdd_read(sp_buffer[PRODOS_I_UNIT] >> 7,
-                                                      *(uint16_t*)&sp_buffer[PRODOS_I_BLOCK],
-                                                      (uint8_t*)&sp_buffer[PRODOS_O_BUFFER]);
-                break;
-            case PRODOS_CMD_WRITE:
-                sp_buffer[PRODOS_O_RETVAL] = hdd_write(sp_buffer[PRODOS_I_UNIT] >> 7,
-                                                       *(uint16_t*)&sp_buffer[PRODOS_I_BLOCK],
-                                                       (uint8_t*)&sp_buffer[PRODOS_I_BUFFER]);
-                break;
+                case PRODOS_CMD_STATUS:
+                    sp_buffer[PRODOS_O_RETVAL] = hdd_status(unit_to_drive(sp_buffer[PRODOS_I_UNIT]),
+                                                            (uint8_t*)&sp_buffer[PRODOS_O_BUFFER]);
+                    break;
+                case PRODOS_CMD_READ:
+                    sp_buffer[PRODOS_O_RETVAL] = hdd_read(unit_to_drive(sp_buffer[PRODOS_I_UNIT]),
+                                                          *(uint16_t*)&sp_buffer[PRODOS_I_BLOCK],
+                                                          (uint8_t*)&sp_buffer[PRODOS_O_BUFFER]);
+                    break;
+                case PRODOS_CMD_WRITE:
+                    sp_buffer[PRODOS_O_RETVAL] = hdd_write(unit_to_drive(sp_buffer[PRODOS_I_UNIT]),
+                                                           *(uint16_t*)&sp_buffer[PRODOS_I_BLOCK],
+                                                           (uint8_t*)&sp_buffer[PRODOS_I_BUFFER]);
+                    break;
             }
             break;
 
         case CONTROL_SP:
             switch (sp_buffer[SP_I_CMD]) {
-            case SP_CMD_STATUS:
-//                printf("SP CmdStatus(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = sp_stat((uint8_t*)&sp_buffer[SP_I_PARAMS],
-                                                 (uint8_t*)&sp_buffer[SP_O_BUFFER]);
-                break;
-            case SP_CMD_READBLK:
-//                printf("SP CmdReadBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = sp_readblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
-                                                    (uint8_t*)&sp_buffer[SP_O_BUFFER]);
-                break;
-            case SP_CMD_WRITEBLK:
-//                printf("SP CmdWriteBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = sp_writeblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
-                                                     (uint8_t*)&sp_buffer[SP_I_BUFFER]);
-                break;
-            case SP_CMD_FORMAT:
-                printf("SP CmdFormat(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
-            case SP_CMD_CONTROL:
-                printf("SP CmdControl(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
-            case SP_CMD_INIT:
-                printf("SP CmdInit(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_SUCCESS;
-                break;
-            case SP_CMD_OPEN:
-                printf("SP CmdOpen(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
-            case SP_CMD_CLOSE:
-                printf("SP CmdClose(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
-            case SP_CMD_READ:
-                printf("SP CmdRead(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
-            case SP_CMD_WRITE:
-                printf("SP CmdWrite(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
-                sp_buffer[SP_O_RETVAL] = SP_BADCMD;
-                break;
+                case SP_CMD_STATUS:
+//                    printf("SP CmdStatus(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = sp_stat((uint8_t*)&sp_buffer[SP_I_PARAMS],
+                                                     (uint8_t*)&sp_buffer[SP_O_BUFFER]);
+                    break;
+                case SP_CMD_READBLK:
+//                    printf("SP CmdReadBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = sp_readblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
+                                                        (uint8_t*)&sp_buffer[SP_O_BUFFER]);
+                    break;
+                case SP_CMD_WRITEBLK:
+//                    printf("SP CmdWriteBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = sp_writeblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
+                                                         (uint8_t*)&sp_buffer[SP_I_BUFFER]);
+                    break;
+                case SP_CMD_FORMAT:
+                    printf("SP CmdFormat(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
+                case SP_CMD_CONTROL:
+                    printf("SP CmdControl(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
+                case SP_CMD_INIT:
+                    printf("SP CmdInit(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_SUCCESS;
+                    break;
+                case SP_CMD_OPEN:
+                    printf("SP CmdOpen(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
+                case SP_CMD_CLOSE:
+                    printf("SP CmdClose(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
+                case SP_CMD_READ:
+                    printf("SP CmdRead(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
+                case SP_CMD_WRITE:
+                    printf("SP CmdWrite(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
+                    sp_buffer[SP_O_RETVAL] = SP_BADCMD;
+                    break;
             }
             break;
     }

@@ -27,8 +27,8 @@ SOFTWARE.
 #ifndef _BOARD_H
 #define _BOARD_H
 
-void board_reset(void);
-
 void board(void);
+
+uint8_t board_slot(void);
 
 #endif
