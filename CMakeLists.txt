@@ -63,11 +63,13 @@ FetchContent_MakeAvailable(a2pico)
 
 set_source_files_properties(incbin.S OBJECT_DEPENDS firmware.rom)
 add_custom_command(
-        COMMAND cl65 ${CMAKE_CURRENT_SOURCE_DIR}/firmware.S
-                  -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.rom
-                  -C apple2-asm.cfg
-        MAIN_DEPENDENCY firmware.S
+        COMMAND cl65 -t apple2 -C apple2-asm.cfg
+                        ${CMAKE_CURRENT_SOURCE_DIR}/6502/SSC.S
+                     -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.rom
+        MAIN_DEPENDENCY 6502/SSC.S
         OUTPUT firmware.rom
+        DEPENDS 6502/SSC.CN00.S 6502/SSC.C800.S 6502/SSC.HILEV.S 6502/SSC.TERM.S
+                6502/SSC.CORE.S 6502/SSC.UTIL.S 6502/SSC.CMD.S   6502/SSC.CF00.S
         VERBATIM
         )
 
@@ -81,6 +83,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         )
 if (MEDIUM STREQUAL "SD")
         target_sources(${PROJECT_NAME} PRIVATE
+        ser.c
         msc_device.c
         usb_descriptors.c
         )

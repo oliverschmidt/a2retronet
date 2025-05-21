@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2024 Oliver Schmidt (https://a2retro.de/)
+Copyright (c) 2025 Oliver Schmidt (https://a2retro.de/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,9 @@ SOFTWARE.
 
 */
 
-#include <pico/stdlib.h>
-#include <pico/multicore.h>
-#include <hardware/clocks.h>
-#include <tusb.h>
+#ifndef _SER_H
+#define _SER_H
 
-#include "board.h"
-#include "ser.h"
-#include "sp.h"
+void ser_task(void);
 
-void main(void) {
-    multicore_launch_core1(board);
-
-    set_sys_clock_khz(160000, false);
-    
-    stdio_init_all();
-
-    tusb_init();
-    sp_init();
-
-    while (true) {
-
-#if MEDIUM == SD
-        tud_task();
-        ser_task();
-#elif MEDIUM == USB
-        tuh_task();
 #endif
-        sp_task();
-    }
-}
