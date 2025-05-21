@@ -24,6 +24,7 @@ SOFTWARE.
 
 */
 
+#include <pico/time.h>
 #include <pico/multicore.h>
 #include <a2pico.h>
 
@@ -56,8 +57,9 @@ static uint8_t ser_bits[] = {
 static volatile uint8_t ser_mask;
 
 static void __time_critical_func(reset)(bool asserted) {
+    static absolute_time_t assert_time;
+
     if (asserted) {
-        iosel =  IOSEL_BANK0;
         iostrb = IOSTRB_OFF;
 
         ser_command = 0b00000000;
@@ -66,6 +68,12 @@ static void __time_critical_func(reset)(bool asserted) {
 
         multicore_fifo_drain();
         sp_reset();
+
+        assert_time = get_absolute_time();
+    } else {
+        if (absolute_time_diff_us(assert_time, get_absolute_time()) > 200000) {
+            iosel = IOSEL_BANK0;
+        }
     }
 }
 
