@@ -227,7 +227,6 @@ RESTORHOOK PLA
 .IF MODE = 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         ASC "APPLE"
-        DFB $8
 
 .ELSE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -235,10 +234,11 @@ RESTORHOOK PLA
         DFB $00         ; SMARTPORT ID
         DFB $00,$00     ; TOTAL BLOCKS
         DFB $D7         ; STATUS BYTE
-        DFB <DISK
 
 .ENDIF ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.ASSERT .LOBYTE(*)=$00,ERROR
+.ASSERT .LOBYTE(*)=$FF,ERROR
+
+        DFB <DISK
 
 .IF MODE .OR SLOT
         .ENDSCOPE
