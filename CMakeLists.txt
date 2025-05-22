@@ -109,3 +109,56 @@ elseif (MEDIUM STREQUAL "USB")
         tinyusb_host
         )
 endif ()
+
+if (MEDIUM STREQUAL "SD")
+
+add_custom_command(
+        COMMAND cl65 -t apple2 apple2.lib -C apple2-asm.cfg -u __EXEHDR__
+                     -Wl -D,__FILETYPE__=$E2 --start-addr $2000 -Wa -D,init
+                        ${CMAKE_CURRENT_SOURCE_DIR}/6502/ssc_show_hide.S
+                     -o ${CMAKE_CURRENT_BINARY_DIR}/ATINIT
+        MAIN_DEPENDENCY 6502/ssc_show_hide.S
+        OUTPUT ATINIT
+        VERBATIM
+        )
+
+add_custom_command(
+        COMMAND cl65 -t apple2 apple2.lib -C apple2-asm.cfg -u __EXEHDR__
+                     -Wl -D,__FILETYPE__=$FF --start-addr $2000 -Wa -D,show
+                        ${CMAKE_CURRENT_SOURCE_DIR}/6502/ssc_show_hide.S
+                     -o ${CMAKE_CURRENT_BINARY_DIR}/SSC.SHOW.SYSTEM
+        MAIN_DEPENDENCY 6502/ssc_show_hide.S
+        OUTPUT SSC.SHOW.SYSTEM
+        VERBATIM
+        )
+
+add_custom_command(
+        COMMAND cl65 -t apple2 apple2.lib -C apple2-asm.cfg -u __EXEHDR__
+                     -Wl -D,__FILETYPE__=$FF --start-addr $2000 -Wa -D,hide
+                        ${CMAKE_CURRENT_SOURCE_DIR}/6502/ssc_show_hide.S
+                     -o ${CMAKE_CURRENT_BINARY_DIR}/SSC.HIDE.SYSTEM
+        MAIN_DEPENDENCY 6502/ssc_show_hide.S
+        OUTPUT SSC.HIDE.SYSTEM
+        VERBATIM
+        )
+
+add_custom_target(ssc_show_hide ALL DEPENDS
+        ATINIT
+        SSC.SHOW.SYSTEM
+        SSC.HIDE.SYSTEM
+        )
+
+add_custom_target(disk
+        COMMAND java -jar ac.jar -as ${CMAKE_CURRENT_BINARY_DIR}/ProDOS_2_4_3.po
+                                 ATINIT
+                                 < ${CMAKE_CURRENT_BINARY_DIR}/ATINIT
+        COMMAND java -jar ac.jar -as ${CMAKE_CURRENT_BINARY_DIR}/ProDOS_2_4_3.po
+                                 SSC.SHOW.SYSTEM
+                                 < ${CMAKE_CURRENT_BINARY_DIR}/SSC.SHOW.SYSTEM
+        COMMAND java -jar ac.jar -as ${CMAKE_CURRENT_BINARY_DIR}/ProDOS_2_4_3.po
+                                 SSC.HIDE.SYSTEM
+                                 < ${CMAKE_CURRENT_BINARY_DIR}/SSC.HIDE.SYSTEM
+        DEPENDS ssc_show_hide
+        VERBATIM)
+
+endif ()
