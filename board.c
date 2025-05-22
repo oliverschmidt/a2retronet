@@ -56,6 +56,8 @@ static uint8_t ser_bits[] = {
 
 static volatile uint8_t ser_mask;
 
+static volatile uint8_t output_mask;
+
 static void __time_critical_func(reset)(bool asserted) {
     static absolute_time_t assert_time;
 
@@ -65,6 +67,8 @@ static void __time_critical_func(reset)(bool asserted) {
         ser_command = 0b00000000;
         ser_control = 0b00000000;
         ser_mask = ser_bits[0b00];
+
+        output_mask = 0b11111111;
 
         multicore_fifo_drain();
         sp_reset();
@@ -127,7 +131,7 @@ static void __time_critical_func(nop_put)(uint32_t data) {
 }
 
 static void __time_critical_func(ser_data_put)(uint32_t data) {
-    sio_hw->fifo_wr = data & ser_mask;
+    sio_hw->fifo_wr = data & ser_mask & output_mask;
 }
 
 static void __time_critical_func(ser_reset_put)(uint32_t data) {
@@ -165,6 +169,20 @@ static void __time_critical_func(sp_control_get)(void) {
     a2pico_putdata(pio0, sp_control);
 }
 
+static void __time_critical_func(basic_enter_get)(void) {
+    if (!iostrb) {
+        return;
+    }
+    output_mask = 0b01111111;
+}
+
+static void __time_critical_func(basic_leave_get)(void) {
+    if (!iostrb) {
+        return;
+    }
+    output_mask = 0b11111111;
+}
+
 static void __time_critical_func(iosel_bank0_get)(void) {
     if (!iostrb) {
         return;
@@ -200,7 +218,7 @@ static void __time_critical_func(iostrb_bank1_get)(void) {
 void (*cffx_get[])(void) = {
     sp_data_get,      sp_control_get,  nop_get,         nop_get,
     nop_get,          nop_get,         nop_get,         nop_get,
-    nop_get,          nop_get,         nop_get,         iostrb_bank0_get,
+    nop_get,          basic_enter_get, basic_leave_get, iostrb_bank0_get,
     iostrb_bank1_get, iosel_bank0_get, iosel_bank1_get, iostrb_off_get
 };
 
@@ -216,6 +234,20 @@ static void __time_critical_func(sp_control_put)(uint32_t data) {
         return;
     }
     sp_control = data;
+}
+
+static void __time_critical_func(basic_enter_put)(uint32_t data) {
+    if (!iostrb) {
+        return;
+    }
+    output_mask = 0b01111111;
+}
+
+static void __time_critical_func(basic_leave_put)(uint32_t data) {
+    if (!iostrb) {
+        return;
+    }
+    output_mask = 0b11111111;
 }
 
 static void __time_critical_func(iosel_bank0_put)(uint32_t data) {
@@ -253,7 +285,7 @@ static void __time_critical_func(iostrb_bank1_put)(uint32_t data) {
 void (*cffx_put[])(uint32_t) = {
     sp_data_put,      sp_control_put,  nop_put,         nop_put,
     nop_put,          nop_put,         nop_put,         nop_put,
-    nop_put,          nop_put,         nop_put,         iostrb_bank0_put,     
+    nop_put,          basic_enter_put, basic_leave_put, iostrb_bank0_put,     
     iostrb_bank1_put, iosel_bank0_put, iosel_bank1_put, iostrb_off_put
 };
 

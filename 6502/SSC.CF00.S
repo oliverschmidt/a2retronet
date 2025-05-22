@@ -43,6 +43,11 @@ SIZEH   EQU $47
 ;;;;;;;;;;;;;;;;;;;;;;;
 DATA    EQU $CFF0       ; SMARTPORT DATA REGISTER
 CTRL    EQU $CFF1       ; SMARTPORT CONTROL REGISTER
+;;;;;;;;;;;;;;;;;;;;;;;;
+; BASIC MODE ADDRESSES ;
+;;;;;;;;;;;;;;;;;;;;;;;;
+BENTER  EQU $CFF9       ; ENTER A2RETRONET BASIC MODE
+BLEAVE  EQU $CFFA       ; LEAVE A2RETRONET BASIC MODE
 ;;;;;;;;;;;;;;;;;;;;;
 ; BANKING ADDRESSES ;
 ;;;;;;;;;;;;;;;;;;;;;
@@ -467,10 +472,10 @@ ERRTEXT DFB 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$
 ; (C) COPYRIGHT 1981 BY APPLE COMPUTER, INC. ;
 ;                                            ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; BASIC INITIALIZATION
-;
-BINIT   BVC NORMIO
+; BASIC INITIALIZATION ;
+;;;;;;;;;;;;;;;;;;;;;;;;
+BINIT   STA BENTER      ; ENTER A2RETRONET BASIC MODE
+        BVC NORMIO
         ASL CMDBYTE,X   ; ALWAYS ENABLE COMMANDS
         LSR CMDBYTE,X
         LDA CMDREG,Y    ; JUST HAD A POWER-ON OR PROGRAM RESET?
@@ -519,6 +524,13 @@ BOUTPUT1 PLA
         JMP CICEXIT     ; FINISH BY CHECKING FOR TERM MODE
 
 BOUTPUT2 JMP SEROUT
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; RETURN FROM BASIC ENTRIES ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+BEXIT   LDA CHARACTER
+        STA BLEAVE      ; LEAVE A2RETRONET BASIC MODE
+        RTS
 
         .RES $D000-*
 

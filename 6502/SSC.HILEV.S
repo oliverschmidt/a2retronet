@@ -23,8 +23,7 @@ BASICEXIT PLA
         TAY
         PLA
         TAX
-        LDA CHARACTER
-        RTS
+        JMP BEXIT
 ;;;;;;;;;;;;;;;;;;;;;;;
 ; BASIC INPUT ROUTINE ;
 ;;;;;;;;;;;;;;;;;;;;;;;
