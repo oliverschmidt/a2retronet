@@ -2,9 +2,45 @@
 
 This project is based on [A2Pico](https://github.com/oliverschmidt/a2pico).
 
-Despite its name, A2retroNET implements a SmartPort mass storage controller with (up to) eight drives. The (currently) only supported disk image format is a headerless ProDOS block image of up to 32MB, typically with the file extensions `.hdv` or `.po`. There are two firmware variants:
+A2retroNET implements a SmartPort mass storage controller with (up to) eight drives. The (currently) only supported disk image format is a headerless ProDOS block image of up to 32MB, typically with the file extensions `.hdv` or `.po`. There are two firmware variants:
 
-### A2retroNET.uf2
+## A2retroNET.uf2
+
+This firmware not only provides a SmartPort controller but at the same time also [Super Serial Card (SSC)](https://en.wikipedia.org/wiki/Apple_II_serial_cards#Super_Serial_Card_(Apple_Computer)) functionality. Common so-called multicards create virtual cards in other Apple II slots. Those slots are then blocked for any other use. In contrast, A2retroNET implements both SmartPort and SSC functionality a __single__ Apple II slot - no other slot is blocked!
+
+A2retroNET implements this unique feature by allowing switching between a SmartPort mode and a SSC mode. However, the trick is that most functionality is available in both modes:
+
+|                      | SmartPort mode           | SSC mode                 |
+|----------------------|:------------------------:|:------------------------:|
+| SmartPort controller | :heavy_check_mark:       | :heavy_check_mark:       |
+| Pascal 1.1 char I/O  | :heavy_check_mark:       | :heavy_check_mark:       |
+| BASIC char I/O       | :heavy_multiplication_x: | :heavy_check_mark:       |
+| Reboot               | :heavy_check_mark:       | :heavy_multiplication_x: |
+
+Because the SmartPort controller is available in both modes, ProDOS continues to function as expected when switching to SSC mode. There are several ways to manage switching between the two modes.
+
+### Manual Mode Switch
+
+If BASIC character I/O is only used very rarely, it is useful to manually switch into SSC mode by executing `SSC.SHOW.SYSTEM` before entering `PR#<n>` and to manually back into SmartPort mode by executing `SSC.HIDE.SYSTEM` after entering `PR#0`.
+
+### Automatic Mode Switch
+
+If BASIC character I/O is used more frequently, it is useful to automatically switch into SSC mode right after booting by adding `ATINIT` to ProDOS boot volumes. Switching back into SmartPort mode is archieved by holding the __Reset__ key slightly longer than usual during a Ctrl-Reset. On the //e and IIgs, this allows a cold boot directly from SSC mode by holding the __Reset__ key slightly longer than usual during a Ctrl-OpenApple-Reset.
+
+### Character I/O
+
+The SSC functionality differs from a real SSC in several ways. The main differences to a SSC are:
+* There is a USB interface instead of an RS-232 interface.
+* There is no UART (not even a virtual one). Therefore, the usual connection settings like `9600 Baud` are meaningless. The only exception is the number of data bits.
+* The actual connection speed is implicitly always _the highest that both communicating parties can achieve without data loss_. This is usually significantly faster than anything possible with a SSC (incl. its `115.200 Baud` mode).
+* Hardware handshake lines are not supported, as they usually don't make any sense without an UART.
+* Interrupts are not supported, as they usually don't make any sense without an UART.
+
+When A2Pico is connected to a PC via USB (just as when flashing an A2Pico firmware), a new virtual serial port (called `COMx` in Windows) is opened on the PC. The easiest way to use the SSC functionality in Windows is to open a command prompt and enter `type COMx` (where `COMx` is A2Pico's virtual serial port). Any output generated on the Apple II (i.e. via `PR#<n>`) will be displayed in the command prompt. It can be redirected into a file or piped into another program. When done, type `Ctrl-C` to quit.
+
+The SSC functionality is set to `Printer Mode` (as opposed to `Communication Mode`). The main reason for this is that serious communication needs require a dedicated Apple II program. These programs ignore the SSC settings anyway.
+
+### SmartPort Controller
 
 This firmware uses a Micro SD Card as its storage medium. When A2Pico is connected to a PC via USB (just as when flashing an A2Pico firmware), it acts as an SD Card reader. This allows access to the SD Card contents without having to open the Apple II and remove the SD Card. That functionality is independent of the Apple II's power-on state. The USB cable can be connected or disconnected at any time. However, be careful to not remove A2Pico from the Apple II slot while it is connected to a PC. Note that the SD Card reader will operate significantly slower than expected, as only a USB 1.1 Full Speed connection (12 Mbps) is available instead of the usual USB 2.0 Hi-Speed connection (480 Mbps).
 
@@ -14,7 +50,7 @@ Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphon
 
 Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware! 
 
-### A2retroNET-USB.uf2
+## A2retroNET-USB.uf2
 
 This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II accesses the SD Card approximately 50% faster than the Thumb Drive. However, unike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with some extension cable, which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
