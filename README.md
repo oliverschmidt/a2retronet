@@ -25,7 +25,7 @@ If BASIC character I/O is only used very rarely, it is useful to manually switch
 
 ### Automatic Mode Switch
 
-If BASIC character I/O is used more frequently, it is useful to automatically switch into SSC mode right after booting by adding `ATINIT` to ProDOS boot volumes. Switching back into SmartPort mode is archieved by holding the __Reset__ key slightly longer than usual during a Ctrl-Reset. On the //e and IIgs, this allows a cold boot directly from SSC mode by holding the __Reset__ key slightly longer than usual during a Ctrl-OpenApple-Reset.
+If BASIC character I/O is used more frequently, it is useful to automatically switch into SSC mode right after booting by adding `ATINIT` to ProDOS boot volumes. Switching back into SmartPort mode is achieved by holding the __Reset__ key slightly longer than usual during a Ctrl-Reset. On the //e and IIgs, this allows a cold boot directly from SSC mode by holding the __Reset__ key slightly longer than usual during a Ctrl-OpenApple-Reset.
 
 ### Character I/O
 
