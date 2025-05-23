@@ -21,7 +21,7 @@ Because the SmartPort controller is available in both modes, ProDOS continues to
 
 ### Manual Mode Switch
 
-If BASIC character I/O is only used very rarely, it is useful to manually switch into SSC mode by executing `SSC.SHOW.SYSTEM` before entering `PR#<n>` and to manually back into SmartPort mode by executing `SSC.HIDE.SYSTEM` after entering `PR#0`.
+If BASIC character I/O is only used very rarely, it is useful to manually switch into SSC mode by executing `SSC.SHOW.SYSTEM` before entering `PR#<n>` and to manually switch back into SmartPort mode by executing `SSC.HIDE.SYSTEM` after entering `PR#0`.
 
 ### Automatic Mode Switch
 
