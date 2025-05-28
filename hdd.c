@@ -117,7 +117,7 @@ static void get_config() {
     }
 }
 
-static uint16_t get_blocks(int drive) {
+static uint32_t get_blocks(int drive) {
     FSIZE_t size = f_size(&image[drive]);
 
     if (!size) {
@@ -136,6 +136,7 @@ static uint16_t get_blocks(int drive) {
         }
 
         size = f_size(&image[drive]);
+        printf("  %u Blocks\n", (uint32_t)(size / BLOCK_SIZE));
     }
 
     return size / BLOCK_SIZE;
