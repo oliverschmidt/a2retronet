@@ -62,6 +62,10 @@ static void __time_critical_func(reset)(bool asserted) {
     static absolute_time_t assert_time;
 
     if (asserted) {
+        if (assert_time != nil_time) {
+            // Ignore unstable RESET line during Apple II power-up
+            return;
+        }
         iostrb = IOSTRB_OFF;
 
         ser_command = 0b00000000;
@@ -78,6 +82,7 @@ static void __time_critical_func(reset)(bool asserted) {
         if (absolute_time_diff_us(assert_time, get_absolute_time()) > 200000) {
             iosel = IOSEL_BANK0;
         }
+        assert_time = nil_time;
     }
 }
 
