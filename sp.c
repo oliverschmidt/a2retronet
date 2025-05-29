@@ -177,7 +177,7 @@ void sp_task(void) {
     gpio_put(PICO_DEFAULT_LED_PIN, true);
 #endif
 
-//    printf("SP Cmd(Bytes=$%04X)\n", sp_write_offset);
+//    printf("SP Cmd(Type=$%02X,Bytes=$%04X)\n", sp_control, sp_write_offset);
     switch (sp_control) {
 
         case CONTROL_PRODOS:
