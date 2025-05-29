@@ -40,6 +40,12 @@ SOFTWARE.
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
+static const uint8_t __not_in_flash("ser_bits") ser_bits[] = {
+    0b11111111,
+    0b01111111,
+    0b00111111,
+    0b00011111};
+
 static volatile uint32_t iosel;
 static volatile uint32_t iostrb;
 
@@ -48,14 +54,7 @@ static volatile uint32_t self;
 static volatile uint32_t ser_command;
 static volatile uint32_t ser_control;
 
-static uint8_t ser_bits[] = {
-    0b11111111,
-    0b01111111,
-    0b00111111,
-    0b00011111};
-
 static volatile uint8_t ser_mask;
-
 static volatile uint8_t output_mask;
 
 static void __time_critical_func(reset)(bool asserted) {
@@ -125,7 +124,7 @@ static void __time_critical_func(ser_control_get)(void) {
     a2pico_putdata(pio0, ser_control);
 }
 
-void (*devsel_get[])(void) = {
+static const void __not_in_flash("devsel_get")(*devsel_get[])(void) = {
     nop_get,      ser_dipsw1_get, ser_dipsw2_get,  nop_get,
     nop_get,      nop_get,        nop_get,         nop_get,
     ser_data_get, ser_status_get, ser_command_get, ser_control_get,
@@ -152,7 +151,7 @@ static void __time_critical_func(ser_control_put)(uint32_t data) {
     ser_mask = ser_bits[(data >> 5) & 0b11];
 }
 
-void (*devsel_put[])(uint32_t) = {
+static const void __not_in_flash("devsel_put")(*devsel_put[])(uint32_t) = {
     nop_put,      nop_put,       nop_put,         nop_put,
     nop_put,      nop_put,       nop_put,         nop_put,
     ser_data_put, ser_reset_put, ser_command_put, ser_control_put,
@@ -220,7 +219,7 @@ static void __time_critical_func(iostrb_bank1_get)(void) {
     iostrb = IOSTRB_BANK1;
 }
 
-void (*cffx_get[])(void) = {
+static const void __not_in_flash("cffx_get")(*cffx_get[])(void) = {
     sp_data_get,      sp_control_get,  nop_get,         nop_get,
     nop_get,          nop_get,         nop_get,         nop_get,
     nop_get,          basic_enter_get, basic_leave_get, iostrb_bank0_get,
@@ -287,7 +286,7 @@ static void __time_critical_func(iostrb_bank1_put)(uint32_t data) {
     iostrb = IOSTRB_BANK1;
 }
 
-void (*cffx_put[])(uint32_t) = {
+static const void __not_in_flash("cffx_put")(*cffx_put[])(uint32_t) = {
     sp_data_put,      sp_control_put,  nop_put,         nop_put,
     nop_put,          nop_put,         nop_put,         nop_put,
     nop_put,          basic_enter_put, basic_leave_put, iostrb_bank0_put,     
@@ -311,20 +310,22 @@ void __time_critical_func(board)(void) {
             if (addr >= 0x0FF0) {           // IOSTRB
                 cffx_get[addr & 0xF]();
             } else if (!io) {               // DEVSEL
-                devsel_get[addr & 0xF]();
+//                devsel_get[addr & 0xF]();
             } else if (!strb) {             // IOSEL
-                a2pico_putdata(pio0, firmware[addr + iosel]);
+//                a2pico_putdata(pio0, firmware[addr + iosel]);
+                a2pico_putdata(pio0, firmware[addr]);
                 iostrb = IOSTRB_BANK0;
                 self   = addr;
             } else if (iostrb) {            // IOSTRB
-                a2pico_putdata(pio0, firmware[addr + iostrb]);
+//                a2pico_putdata(pio0, firmware[addr + iostrb]);
+                a2pico_putdata(pio0, firmware[addr + 0x1000]);
             }
         } else {
             uint32_t data = a2pico_getdata(pio0);
             if (addr >= 0x0FF0) {           // IOSTRB
                 cffx_put[addr & 0xF](data);
             } else if (!io) {               // DEVSEL
-                devsel_put[addr & 0xF](data);
+//                devsel_put[addr & 0xF](data);
             } else if (!strb) {             // IOSEL
                 iostrb = IOSTRB_BANK0;
             }

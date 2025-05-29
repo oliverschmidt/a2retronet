@@ -36,7 +36,7 @@ SOFTWARE.
 void main(void) {
     multicore_launch_core1(board);
 
-    set_sys_clock_khz(160000, false);
+    set_sys_clock_khz(170000, false);
     
     stdio_init_all();
 
