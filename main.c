@@ -27,6 +27,7 @@ SOFTWARE.
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
 #include <hardware/clocks.h>
+#include <hardware/structs/busctrl.h>
 #include <tusb.h>
 
 #include "board.h"
@@ -34,10 +35,11 @@ SOFTWARE.
 #include "sp.h"
 
 void main(void) {
+    busctrl_hw->priority = BUSCTRL_BUS_PRIORITY_PROC1_BITS;
     multicore_launch_core1(board);
 
     set_sys_clock_khz(170000, false);
-    
+
     stdio_init_all();
 
     tusb_init();
