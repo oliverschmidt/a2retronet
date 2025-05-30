@@ -70,6 +70,7 @@ add_custom_command(
         OUTPUT firmware.rom
         DEPENDS 6502/SSC.CN00.S 6502/SSC.C800.S 6502/SSC.HILEV.S 6502/SSC.TERM.S
                 6502/SSC.CORE.S 6502/SSC.UTIL.S 6502/SSC.CMD.S   6502/SSC.CF00.S
+                6502/SMARTPORT.S
         VERBATIM
         )
 

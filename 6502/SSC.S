@@ -154,11 +154,86 @@ HOME    EQU $FC58       ; CLEAR SCREEN AND HOME CURSOR
 PRERR   EQU $FF2D       ; DISPLAY "ERR" AND BEEP
 BASIC   EQU $E000       ; BASIC INTERPRETER COLD START
 
-.INCLUDE "SSC.CN00.S"
-.INCLUDE "SSC.C800.S"
-.INCLUDE "SSC.HILEV.S"
-.INCLUDE "SSC.TERM.S"
-.INCLUDE "SSC.CORE.S"
-.INCLUDE "SSC.UTIL.S"
-.INCLUDE "SSC.CMD.S"
-.INCLUDE "SSC.CF00.S"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                               ;
+; VARIABLE DEFINITIONS          ;
+;                               ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+; ZERO PAGE EQUS ;
+;;;;;;;;;;;;;;;;;;
+CMD     EQU $42         ; PRODOS COMMAND
+UNIT    EQU $43         ; PRODOS UNIT
+ADDRL   EQU $44         ; PRODOS / SMARTPORT BUFFER ADDRESS
+ADDRH   EQU $45
+BLOCKL  EQU $46         ; PRODOS BLOCK
+BLOCKH  EQU $47
+SIZEL   EQU $46         ; SMARTPORT BUFFER SIZE
+SIZEH   EQU $47
+;;;;;;;;;;;;;;;;;;;;;;;
+; SMARTPORT ADDRESSES ;
+;;;;;;;;;;;;;;;;;;;;;;;
+DATA    EQU $CFF0       ; SMARTPORT DATA REGISTER
+CTRL    EQU $CFF1       ; SMARTPORT CONTROL REGISTER
+;;;;;;;;;;;;;;;;;;;;;;;;
+; BASIC MODE ADDRESSES ;
+;;;;;;;;;;;;;;;;;;;;;;;;
+BENTER  EQU $CFF9       ; ENTER A2RETRONET BASIC MODE
+BLEAVE  EQU $CFFA       ; LEAVE A2RETRONET BASIC MODE
+;;;;;;;;;;;;;;;;;;;;;
+; BANKING ADDRESSES ;
+;;;;;;;;;;;;;;;;;;;;;
+BANKSSC EQU $CFFB       ; EXPANSION ROM BANK FOR SSC
+BANKSP  EQU $CFFC       ; EXPANSION ROM BANK FOR SP
+
+.REPEAT 4,_BANK
+    .DEFINE BANK _BANK
+
+    .REPEAT 8,_SLOT
+        .DEFINE SLOT _SLOT
+
+        .IF BANK <> 0 .OR SLOT <> 0
+            .SCOPE
+        .ENDIF
+            .INCLUDE "SSC.CN00.S"
+        .IF BANK <> 0 .OR SLOT <> 0
+            .ENDSCOPE
+        .ENDIF
+
+        .UNDEF SLOT
+    .ENDREP
+
+    .IF BANK < 2
+
+        .IF BANK <> 0
+            .SCOPE
+        .ENDIF
+            .INCLUDE "SSC.C800.S"
+            .INCLUDE "SSC.HILEV.S"
+            .INCLUDE "SSC.TERM.S"
+            .INCLUDE "SSC.CORE.S"
+            .INCLUDE "SSC.UTIL.S"
+            .INCLUDE "SSC.CMD.S"
+            .INCLUDE "SSC.CF00.S"
+        .IF BANK <> 0
+            .ENDSCOPE
+        .ENDIF
+
+    .ELSE
+
+        .IF BANK <> 2
+            .SCOPE
+        .ENDIF
+            .INCLUDE "SMARTPORT.S"
+        .IF BANK <> 2
+            .ENDSCOPE
+        .ENDIF
+
+        .SCOPE
+        .INCLUDE "SSC.CF00.S"
+        .ENDSCOPE
+
+    .ENDIF
+
+    .UNDEF BANK
+.ENDREP

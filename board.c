@@ -32,11 +32,13 @@ SOFTWARE.
 
 #include "board.h"
 
-#define IOSEL_BANK0  0x0000
-#define IOSEL_BANK1  0x0800
-#define IOSTRB_OFF   0x0000
-#define IOSTRB_BANK0 0x0800
-#define IOSTRB_BANK1 0x1000
+#define IOSEL_OFFSET  0x1000
+#define IOSTRB_OFFSET 0x2000
+
+#define IOSEL_BANK0  (offset &= ~IOSEL_OFFSET)
+#define IOSEL_BANK1  (offset |=  IOSEL_OFFSET)
+#define IOSTRB_BANK0 (offset &= ~IOSTRB_OFFSET)
+#define IOSTRB_BANK1 (offset |=  IOSTRB_OFFSET)
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
@@ -46,8 +48,8 @@ static const uint8_t __not_in_flash("ser_bits") ser_bits[] = {
     0b00111111,
     0b00011111};
 
-static volatile uint32_t iosel;
-static volatile uint32_t iostrb;
+static volatile bool     active;
+static volatile uint32_t offset;
 
 static volatile uint32_t self;
 
@@ -65,7 +67,8 @@ static void __time_critical_func(reset)(bool asserted) {
             // Ignore unstable RESET line during Apple II power-up
             return;
         }
-        iostrb = IOSTRB_OFF;
+        active = false;
+        IOSTRB_BANK0;
 
         ser_command = 0b00000000;
         ser_control = 0b00000000;
@@ -79,7 +82,7 @@ static void __time_critical_func(reset)(bool asserted) {
         assert_time = get_absolute_time();
     } else {
         if (absolute_time_diff_us(assert_time, get_absolute_time()) > 200000) {
-            iosel = IOSEL_BANK0;
+            IOSEL_BANK0;
         }
         assert_time = nil_time;
     }
@@ -159,7 +162,7 @@ static const void __not_in_flash("devsel_put")(*devsel_put[])(uint32_t) = {
 };
 
 static void __time_critical_func(sp_data_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     a2pico_putdata(pio0, sp_buffer[sp_read_offset]);
@@ -167,130 +170,130 @@ static void __time_critical_func(sp_data_get)(void) {
 }
 
 static void __time_critical_func(sp_control_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     a2pico_putdata(pio0, sp_control);
 }
 
 static void __time_critical_func(basic_enter_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     output_mask = 0b01111111;
 }
 
 static void __time_critical_func(basic_leave_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     output_mask = 0b11111111;
 }
 
 static void __time_critical_func(iosel_bank0_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iosel = IOSEL_BANK0;
+    IOSEL_BANK0;
 }
 
 static void __time_critical_func(iosel_bank1_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iosel = IOSEL_BANK1;
-}
-
-static void __time_critical_func(iostrb_off_get)(void) {
-    iostrb = IOSTRB_OFF;
+    IOSEL_BANK1;
 }
 
 static void __time_critical_func(iostrb_bank0_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iostrb = IOSTRB_BANK0;
+    IOSTRB_BANK0;
 }
 
 static void __time_critical_func(iostrb_bank1_get)(void) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iostrb = IOSTRB_BANK1;
+    IOSTRB_BANK1;
+}
+
+static void __time_critical_func(deactivate_get)(void) {
+    active = false;
 }
 
 static const void __not_in_flash("cffx_get")(*cffx_get[])(void) = {
     sp_data_get,      sp_control_get,  nop_get,         nop_get,
     nop_get,          nop_get,         nop_get,         nop_get,
     nop_get,          basic_enter_get, basic_leave_get, iostrb_bank0_get,
-    iostrb_bank1_get, iosel_bank0_get, iosel_bank1_get, iostrb_off_get
+    iostrb_bank1_get, iosel_bank0_get, iosel_bank1_get, deactivate_get
 };
 
 static void __time_critical_func(sp_data_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     sp_buffer[sp_write_offset++] = data;
 }
 
 static void __time_critical_func(sp_control_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     sp_control = data;
 }
 
 static void __time_critical_func(basic_enter_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     output_mask = 0b01111111;
 }
 
 static void __time_critical_func(basic_leave_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
     output_mask = 0b11111111;
 }
 
 static void __time_critical_func(iosel_bank0_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iosel = IOSEL_BANK0;
+    IOSEL_BANK0;
 }
 
 static void __time_critical_func(iosel_bank1_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iosel = IOSEL_BANK1;
-}
-
-static void __time_critical_func(iostrb_off_put)(uint32_t data) {
-    iostrb = IOSTRB_OFF;
+    IOSEL_BANK1;
 }
 
 static void __time_critical_func(iostrb_bank0_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iostrb = IOSTRB_BANK0;
+    IOSTRB_BANK0;
 }
 
 static void __time_critical_func(iostrb_bank1_put)(uint32_t data) {
-    if (!iostrb) {
+    if (!active) {
         return;
     }
-    iostrb = IOSTRB_BANK1;
+    IOSTRB_BANK1;
+}
+
+static void __time_critical_func(deactivate_put)(uint32_t data) {
+    active = false;
 }
 
 static const void __not_in_flash("cffx_put")(*cffx_put[])(uint32_t) = {
     sp_data_put,      sp_control_put,  nop_put,         nop_put,
     nop_put,          nop_put,         nop_put,         nop_put,
     nop_put,          basic_enter_put, basic_leave_put, iostrb_bank0_put,     
-    iostrb_bank1_put, iosel_bank0_put, iosel_bank1_put, iostrb_off_put
+    iostrb_bank1_put, iosel_bank0_put, iosel_bank1_put, deactivate_put
 };
 
 void __time_critical_func(board)(void) {
@@ -307,28 +310,25 @@ void __time_critical_func(board)(void) {
         uint32_t read = pico & 0x1000;      // R/W
 
         if (read) {
-            if (addr >= 0x0FF0) {           // IOSTRB
+            if (addr >= 0x0FF0) {
                 cffx_get[addr & 0xF]();
-            } else if (!io) {               // DEVSEL
-//                devsel_get[addr & 0xF]();
-            } else if (!strb) {             // IOSEL
-//                a2pico_putdata(pio0, firmware[addr + iosel]);
-                a2pico_putdata(pio0, firmware[addr]);
-                iostrb = IOSTRB_BANK0;
-                self   = addr;
-            } else if (iostrb) {            // IOSTRB
-//                a2pico_putdata(pio0, firmware[addr + iostrb]);
-                a2pico_putdata(pio0, firmware[addr + 0x1000]);
+            } else if (!io) {
+                devsel_get[addr & 0xF]();
+            } else if (!strb || active) {
+                a2pico_putdata(pio0, firmware[addr + offset]);
             }
         } else {
             uint32_t data = a2pico_getdata(pio0);
-            if (addr >= 0x0FF0) {           // IOSTRB
+            if (addr >= 0x0FF0) {
                 cffx_put[addr & 0xF](data);
-            } else if (!io) {               // DEVSEL
-//                devsel_put[addr & 0xF](data);
-            } else if (!strb) {             // IOSEL
-                iostrb = IOSTRB_BANK0;
+            } else if (!io) {
+                devsel_put[addr & 0xF](data);
             }
+        }
+
+        if (io && !strb) {
+            active = true;
+            self   = addr;
         }
     }
 }

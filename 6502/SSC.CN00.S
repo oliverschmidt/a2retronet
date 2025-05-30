@@ -14,16 +14,9 @@
 ;                               ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-.REPEAT 2,MODE
-.REPEAT 8,SLOT
-
-.IF MODE .OR SLOT
-        .SCOPE
-.ENDIF
-
         ORG $C000+$0100*SLOT
 
-.IF MODE = 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.IF BANK & 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         BIT IORTS       ; SET THE V-FLAG
         BVS BENTRY      ; <ALWAYS>
@@ -180,7 +173,7 @@ RESTORHOOK PLA
 
         ASC "OlSc"
 
-.IF MODE = 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.IF BANK & 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         ASC "APPLE"
 
@@ -195,10 +188,3 @@ RESTORHOOK PLA
 .ASSERT .LOBYTE(*)=$FF,ERROR
 
         DFB <DISK
-
-.IF MODE .OR SLOT
-        .ENDSCOPE
-.ENDIF
-
-.ENDREP
-.ENDREP
