@@ -236,6 +236,7 @@ bool hdd_mounted(void) {
 }
 
 uint8_t hdd_drives(void) {
+    get_config();
     return drives;
 }
 
