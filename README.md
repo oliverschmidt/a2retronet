@@ -2,7 +2,7 @@
 
 This project is based on [A2Pico](https://github.com/oliverschmidt/a2pico).
 
-A2retroNET implements a SmartPort mass storage controller with (up to) eight drives. The (currently) only supported disk image format is a headerless ProDOS block image of up to 32MB, typically with the file extensions `.hdv` or `.po`. There are two firmware variants:
+A2retroNET implements a SmartPort mass storage controller with (up to) eight drives. The (currently) only supported disk image format is a ProDOS block image of up to 32MB, typically with the file extensions `.hdv`, `.po` or `.2mg`. There are two firmware variants:
 
 ## A2retroNET.uf2
 

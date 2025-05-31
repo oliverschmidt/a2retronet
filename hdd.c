@@ -51,6 +51,7 @@ static uint8_t drives;
 
 static char     path  [MAX_DRIVES][MAX_PATH];
 static FIL      image [MAX_DRIVES];
+static uint16_t offset[MAX_DRIVES];
 static uint16_t blocks[MAX_DRIVES];
 static bool     error [MAX_DRIVES];
 static bool     prot  [MAX_DRIVES];
@@ -136,7 +137,13 @@ static uint16_t get_blocks(int drive) {
             error[drive] = true;
         }
 
-        int32_t raw_blocks = f_size(&image[drive]) / BLOCK_SIZE;
+        char *extension = strrchr(path[drive], '.');
+        if (extension && strcasecmp(extension, ".2mg") == 0) {
+            offset[drive] = 0x40;
+            printf("  2MG\n");
+        }
+
+        int32_t raw_blocks = (f_size(&image[drive]) - offset[drive]) / BLOCK_SIZE;
         blocks[drive] = raw_blocks > 0xFFFF ? 0xFFFF: raw_blocks;
         printf("  %u Blocks\n", blocks[drive]);
     }
@@ -149,7 +156,7 @@ static bool seek_block(int drive, uint16_t block) {
         return false;
     }
 
-    FRESULT fr = f_lseek(&image[drive], block * BLOCK_SIZE);
+    FRESULT fr = f_lseek(&image[drive], offset[drive] + block * BLOCK_SIZE);
     if (fr != FR_OK) {
         printf("f_lseek(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
         return false;
@@ -177,6 +184,7 @@ void hdd_reset(void) {
 
     for (int drive = 0; drive < MAX_DRIVES; drive++) {
         path  [drive][0] = '\0';
+        offset[drive] = 0;
         blocks[drive] = 0;
         error [drive] = false;
         prot  [drive] = false;
