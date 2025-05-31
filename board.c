@@ -315,7 +315,7 @@ void __time_critical_func(board)(void) {
             } else if (!io) {
                 devsel_get[addr & 0xF]();
             } else if (!strb || active) {
-                a2pico_putdata(pio0, firmware[addr + offset]);
+                a2pico_putdata(pio0, firmware[offset | addr]);
             }
         } else {
             uint32_t data = a2pico_getdata(pio0);
