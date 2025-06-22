@@ -96,3 +96,10 @@ Notes:
 * A drive without an assigment is like a real drive with no media inserted. The same applies to assigning to a nonexistent disk image.
 * A disk image with the file attribute Read-Only is used as write protected medium.
 * Any line starting with `#` is considered a comment and ignored. This allows for quick switching between multiple assigments to the same drive by commenting out all but one.
+
+## Error Handling
+
+There are three distinct scenarios for accessing the A2retroNET SmartPort controller:
+* The Apple II Autostart ROM searches slots 7 through 1 for a bootable device. If an error occurs, the search continues with the next slot.
+* A boot operation is requested via `PR#<n>`. If an error occurs, the message `HDD ERROR` is displayed before returning to the BASIC prompt.
+* ProDOS calls the SmartPort interface. If an error occurs, it is reported to ProDOS.
