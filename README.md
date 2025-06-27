@@ -104,9 +104,9 @@ Accessing the A2retroNET SmartPort controller can result in an error for various
 * Corrupted media
 * Missing `A2retroNET.txt`
 * Malformed `A2retroNET.txt`
-* Missing image file
-* Corrupted image file 
-* Write protected image file
+* Missing disk image
+* Corrupted disk image
+* Write protected disk image
 
 There are three distinct scenarios for accessing the A2retroNET SmartPort controller:
 * The Apple II Autostart ROM searches slots 7 through 1 for a bootable device. If an error occurs, the search continues with the next slot.
