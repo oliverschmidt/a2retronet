@@ -29,6 +29,7 @@ SOFTWARE.
 #include <pico/stdlib.h>
 
 #include "board.h"
+#include "config.h"
 #include "hdd.h"
 
 #include "sp.h"
@@ -114,7 +115,7 @@ static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
     if (!params[SP_PARAM_UNIT]) {
         if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
             printf("SP CmdStatus(Device=Smartport)\n");
-            stat_list[2 + 0] = hdd_drives();
+            stat_list[2 + 0] = config_drives();
             stat_list[2 + 1] = 0b01000000;  // no interrupt sent
             memset(&stat_list[2 + 2], 0x00, 6);
             stat_list[0] = 8;   // size header low
@@ -170,7 +171,7 @@ void sp_task(void) {
         return;
     }
 
-    if (!hdd_mounted()) {
+   if (!hdd_mounted()) {
         return;
     }
 

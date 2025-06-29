@@ -77,6 +77,7 @@ add_custom_command(
 target_sources(${PROJECT_NAME} PRIVATE
         main.c
         board.c
+        config.c
         hdd.c
         sp.c
         diskio.c
