@@ -19,9 +19,7 @@
 ;;;;;;;;;;;;;;;;;;
 ; COMMON HANDLER ;
 ;;;;;;;;;;;;;;;;;;
-COMMON  INX             ; FORCE Z
-        BNE BOOT
-        STA BANKSP
+COMMON  STA BANKSP
         JMP SWITCH
 
 ;;;;;;;;;;;;;;;
@@ -30,20 +28,37 @@ COMMON  INX             ; FORCE Z
 QUIT    STA BANKSSC
         RTS
 
+;;;;;;;;;;
+; CONFIG ;
+;;;;;;;;;;
+CFG     STA BANKSP
+        JSR CFGHDLR
+        STA BANKSSC
+        RTS
+
 ;;;;;;;;;;;;;;;;
 ; BOOT HANDLER ;
 ;;;;;;;;;;;;;;;;
-BOOT    STX CMD         ; X IS 1 -> READ
-        LDX #>$0800
-        ASL             ; A IS $CN
+BOOT    STA BANKSP
+        JSR CHECK
+        STA BANKSSC
+        BNE DOIT
+        JSR CFG
+
+DOIT    LDX #$01
+        STX CMD
+        LDA MSLOT
+        ASL
         ASL
         ASL
         ASL
         STA UNIT        ; DRIVE 1
-        STY ADDRL       ; Y IS 0
-        STX ADDRH
-        STY BLOCKL
-        STY BLOCKH
+        DEX
+        STX ADDRL
+        LDY #>$0800
+        STY ADDRH
+        STX BLOCKL
+        STX BLOCKH
         STA BANKSP
         JSR PRODOS      ; CALL PRODOS HANDLER
         STA BANKSSC

@@ -62,7 +62,7 @@ BENTRY  STA CHARACTER
         PHA
         TYA
         PHA
-        JSR SETUP
+        JSR BSETUP
         JMP BINIT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,13 +72,13 @@ BENTRY  STA CHARACTER
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 DISK    CLC             ; PRODOS DRIVER ENTRY
-        BCC MARK
+        BCC SETUP
         SEC             ; SMARTPORT DRIVER ENTRY
-MARK    LDX #$FF
-DENTRY  LDA #$C0+SLOT
-        STA MSLOT
-        STA ROMSOFF
+SETUP   JSR DSETUP
         JMP COMMON
+
+DENTRY  JSR DSETUP
+        JMP BOOT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                ;
@@ -112,10 +112,10 @@ PSTATUS2 LDA STSBYTE,X  ; GET ERROR FLAGS
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ; SHARED SETUP ROUTINE ;
 ;;;;;;;;;;;;;;;;;;;;;;;;
-SETUP   LDX #$C0+SLOT   ; X-REG WILL GENERALLY BE $CN
-        STX MSLOT
-        LDY #$10*SLOT   ; Y-REG WILL GENERALLY BE $N0
+BSETUP  LDY #$10*SLOT   ; Y-REG WILL GENERALLY BE $N0
         STY SLOT16
+DSETUP  LDX #$C0+SLOT   ; X-REG WILL GENERALLY BE $CN
+        STX MSLOT
         STA ROMSOFF     ; SWITCH OUT OTHER $C800 ROMS
         RTS
 
@@ -152,7 +152,7 @@ SAVEHOOK LDA CSWL,x
 ;
         PLA
         STA CHARACTER
-        JSR SETUP
+        JSR BSETUP
 ;
 ; PUT BACK CSWL INTO CHNBYTE
 ;
@@ -169,7 +169,16 @@ RESTORHOOK PLA
         LDX MSLOT
         RTS
 
-        .RES $0100-$0A-<*
+        .RES $0100-$10-<*
+
+;;;;;;;;;;;;;;;;;;
+;                ;
+;  CONFIG ENTRY  ;
+;                ;
+;;;;;;;;;;;;;;;;;;
+
+CONFIG  JSR DSETUP
+        JMP CFG
 
         ASC "OlSc"
 

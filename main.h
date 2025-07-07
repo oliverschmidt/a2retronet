@@ -24,17 +24,9 @@ SOFTWARE.
 
 */
 
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef _MAIN_H
+#define _MAIN_H
 
-#define MAX_DRIVES 8
-
-void config_reset(void);
-
-uint8_t config_drives(void);
-
-char *config_drivepath(uint8_t drive);
-
-void config(void);
+void io_task(void);
 
 #endif

@@ -28,6 +28,7 @@ SOFTWARE.
 #include <ff.h>
 #include <diskio.h>
 
+#include "config.h"
 #include "hdd.h"
 
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize) {
@@ -56,6 +57,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 
     // Avoid inconsistency in local FAT implementation
     hdd_reset();
+    config_reset();
 
     if (disk_write(0, buffer, lba, bufsize / FF_MAX_SS) != RES_OK) {
         printf("disk_write() error\n");

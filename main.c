@@ -34,6 +34,17 @@ SOFTWARE.
 #include "ser.h"
 #include "sp.h"
 
+#include "main.h"
+
+void io_task(void) {
+#if MEDIUM == SD
+        tud_task();
+        ser_task();
+#elif MEDIUM == USB
+        tuh_task();
+#endif
+}
+
 void main(void) {
     busctrl_hw->priority = BUSCTRL_BUS_PRIORITY_PROC1_BITS;
     multicore_launch_core1(board);
@@ -46,13 +57,7 @@ void main(void) {
     sp_init();
 
     while (true) {
-
-#if MEDIUM == SD
-        tud_task();
-        ser_task();
-#elif MEDIUM == USB
-        tuh_task();
-#endif
+        io_task();
         sp_task();
     }
 }

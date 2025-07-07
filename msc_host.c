@@ -54,7 +54,7 @@ static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const*
     printf("  Block Count:%lu, Block Size:%lu\n", block_count, block_size);
     printf("  Disk Size:%" PRIu32 " MB\n", block_count / ((1024*1024) / block_size));
 
-    hdd_usb(true);
+    hdd_mount_usb(true);
     return true;
 }
 
@@ -67,5 +67,5 @@ void tuh_msc_mount_cb(uint8_t dev_addr) {
 void tuh_msc_umount_cb(uint8_t dev_addr) {
     printf("MSC Unmount(Device=%d)\n", dev_addr);
 
-    hdd_usb(false);
+    hdd_mount_usb(false);
 }

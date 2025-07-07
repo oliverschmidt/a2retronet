@@ -31,9 +31,11 @@ void hdd_init(void);
 
 void hdd_reset(void);
 
-void hdd_usb(bool);
+void hdd_mount_usb(bool);
 
-bool hdd_mounted(void);
+bool hdd_sd_mounted(void);
+
+bool hdd_usb_mounted(void);
 
 uint8_t hdd_drives(void);
 

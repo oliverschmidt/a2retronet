@@ -349,4 +349,83 @@ WRPAGE  LDA (ADDRL),Y
         BNE WRPAGE
         RTS
 
+;;;;;;;;;;;;;;;;;;;;
+; CONFIG KEY CHECK ;
+;;;;;;;;;;;;;;;;;;;;
+CHECK   LDX #$FF
+RETRY   LDA KBD
+        BMI HAVEKEY
+        INX
+        STX DATA
+        LDA #$40        ; CONFIG
+        JSR WRCMD
+        BNE DONE
+        LDA DATA
+        STA $07F7
+        BNE RETRY       ; ALWAYS
+HAVEKEY STA KBDSTRB
+        CMP #'C'+$80
+        BEQ DONE
+        CMP #'c'+$80 
+DONE    RTS
+
+;;;;;;;;;;;;;;;;;;
+; CONFIG HANDLER ;
+;;;;;;;;;;;;;;;;;;
+CFGHDLR STA $C051       ; TEXT
+        STA $C054       ; PAGE 1
+        LDA $FBB3
+        CMP #$38        ; APPLE ][
+        BEQ UPPER
+        CMP #$EA        ; APPLE ][+
+        BEQ UPPER
+        LDA $FBC0
+        CMP #$EA        ; APPLE //e
+        BEQ UPPER
+        LDA $C01E       ; CHARSET?
+        PHA
+        STA $C00F       ; ALT CHARSET
+        LDA $C01F       ; COLS?
+        PHA
+        STA $C00C       ; 40 COLS
+        LDA #$65        ; LOWERCASE
+        PHP
+        BNE LOOP        ; ALWAYS
+UPPER   PHP
+        LDA #$64        ; UPPERCASE
+
+LOOP    STA DATA
+        LDA #$40        ; CONFIG
+        JSR WRCMD
+        BNE SCRN        ; QUIT?
+
+        PLP
+        BEQ NOCHAR
+        PLA             ; COLS
+        BPL NOCOLS      ; 40 COLS?
+        STA $C00D       ; 80 COLS
+NOCOLS  PLA             ; CHARSET
+        BMI NOCHAR      ; ALT CHARSET?
+        STA $C00E       ; PRI CHARSET
+NOCHAR  JSR HOME
+        RTS
+
+SCRN    LDX #$00
+LINE    TXA
+        JSR BASCALC
+        LDY #$00
+CHAR    LDA DATA
+        STA (BASL),Y
+        INY
+        CPY #$28        ; COLS
+        BCC CHAR 
+        INX
+        CPX #$18        ; ROWS
+        BCC LINE
+
+GETKEY  LDA KBD
+        BPL GETKEY
+        STA KBDSTRB
+        BMI LOOP
+
         .RES $CF00-*

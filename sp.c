@@ -34,11 +34,6 @@ SOFTWARE.
 
 #include "sp.h"
 
-#define CONTROL_NONE    0x00
-#define CONTROL_PRODOS  0x01
-#define CONTROL_SP      0x02
-#define CONTROL_DONE    0x80
-
 #define PRODOS_CMD_STATUS   0x00
 #define PRODOS_CMD_READ     0x01
 #define PRODOS_CMD_WRITE    0x02
@@ -171,10 +166,15 @@ void sp_task(void) {
         return;
     }
 
-   if (!hdd_mounted()) {
+    if (!hdd_sd_mounted() && !hdd_usb_mounted()) {
         return;
     }
 
+    if (sp_control == CONTROL_CONFIG) {
+        config();
+        return;
+    }
+       
 #ifdef PICO_DEFAULT_LED_PIN
     gpio_put(PICO_DEFAULT_LED_PIN, true);
 #endif

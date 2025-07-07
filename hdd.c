@@ -124,12 +124,12 @@ void hdd_reset(void) {
         }
     }
     memset(hdd, 0, sizeof(hdd));
-    config_reset();
 }
 
-void hdd_usb(bool mount) {
+void hdd_mount_usb(bool mount) {
     // Make sure the upcoming new default drive is actually used
     hdd_reset();
+    config_reset();
 
     if (mount) {
         static FATFS fatfs;
@@ -162,8 +162,12 @@ void hdd_usb(bool mount) {
     }
 }
 
-bool hdd_mounted(void) {
-    return usb || sd;
+bool hdd_sd_mounted(void) {
+    return sd;
+}
+
+bool hdd_usb_mounted(void) {
+    return usb;
 }
 
 bool hdd_protected(uint8_t drive) {

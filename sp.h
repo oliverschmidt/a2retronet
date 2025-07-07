@@ -27,6 +27,12 @@ SOFTWARE.
 #ifndef _SP_H
 #define _SP_H
 
+#define CONTROL_NONE    0x00
+#define CONTROL_PRODOS  0x01
+#define CONTROL_SP      0x02
+#define CONTROL_CONFIG  0x40
+#define CONTROL_DONE    0x80
+
 extern volatile uint8_t  sp_control;
 extern volatile uint8_t  sp_buffer[1024];
 extern volatile uint16_t sp_read_offset;
