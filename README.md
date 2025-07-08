@@ -53,7 +53,7 @@ Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware!
 
 ## A2retroNET-USB.uf2
 
-This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II accesses the SD Card approximately 50% faster than the Thumb Drive. However, unike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with some extension cable, which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
+This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II accesses the SD Card approximately 50% faster than the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with some extension cable, which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
 Of course, this firmware can be used without an SD Card. However, it is particularily adventageous to use the SD Card to represent (fast) fixed hard drives and the Thumb Drive to represent (flexible) floppy drives. Without a Thumb Drive in place, the `A2retroNET.txt` configuration file is read from the SD Card. However, as soon as a Thumb Drive is plugged in, `A2retroNET.txt` is read from the Thumb Drive. This way, as with real hard drives and floppy drives, you can usually work with the hard drives only, but still quickly insert a floppy to try out something. Additionally, it is possible that the `A2retroNET.txt` configuration file on a Thumb Drive reference disk images on the SD Card, so that both storage media can be accessed simultaneuously. And finally it possible that a Thumb Drive only contains a `A2retroNET.txt` configuration file which overrides the one on the SD Card. Imagine simply plugging in a Thumb Drive to temporarily use the Total Replay hard disk image on the SD Card as boot disk, thus turning the Apple II into a game console.
 
@@ -63,18 +63,70 @@ You can find the right adapter or cable to connect a USB Thumb Drive to A2Pico b
 
 Please ensure the A2Pico `USB Pwr` is set to `on` when using this firmware! 
 
-## A2retroNET.txt
+## Configuration Utility
 
-To use a storage device with A2retroNET, the text file `A2retroNET.txt` must be created in the root directory. This file is formatted like a conventional INI file.
+The A2retroNET firmware contains a configuration utility. It can be invoked in two ways:
 
-The (currently) only section is `[drives]`. This section contains the following entry types:
+* By pressing the `C` key while A2retroNET delays the boot. During the boot delay, a countdown will be displayed in the lower right corner of the screen. Pressing any other key will skip the remaining boot delay. The boot delay is configurable.
 
-* `number` allows you to optionally limit the number of drives provided by A2retroNET for the Apple II operating system. Valid values are `2`, `4`, `6` and `8`. The default value is `8`.
+* By calling `$C<n>F0`:
+  
+  | A2retroNET Slot | BASIC Command |
+  |:---------------:|:-------------:|
+  | 1               | `CALL 49648`  |
+  | 2               | `CALL 49904`  |
+  | 3               | `CALL 50160`  |
+  | 4               | `CALL 50416`  |
+  | 5               | `CALL 50672`  |
+  | 6               | `CALL 50928`  |
+  | 7               | `CALL 51184`  |
+
+The configuration utility provides a convenient way to edit the `A2retroNET.txt` configuration file directly from the Apple II. However, you can still edit `A2retroNET.txt` in a different way at any time. The title on each screen indicates wether you are editing `A2retroNET.txt` on the USB Thumb Drive or the Micro SD Card. 
+
+The `Drive Configuration` screen allows you to configure which disk image file is used for which drive.
+
+| Key              | Command                                                                  |
+|:----------------:|--------------------------------------------------------------------------|
+| `Esc`            | Quit the configuration utility                                           |
+| `Space` or `Tab` | Toggle between selecting a drive and selecting a disk image file         |
+| `Left` or `Up`   | Select previous drive or disk image file (or directory)                  |
+| `Right`or `Down` | Select next drive or disk image file (or directory)                      |
+| `Return`         | "Insert" selected disk image file in selected drive (or enter directory) |
+| `-`              | "Remove" disk image file from selected drive                             |
+| `/`              | Go to root directory                                                     |
+| `:`              | Switch between selecting from the USB Thumb Drive and the Micro SD Card  |
+| `1` - `8`        | Directly select a drive                                                  |
+| `0` or `A` - `Z` | Directly select a disk image file (or directory) with a matching name    |
+| `Ctrl-S`         | Enter `Settings` screen                                                  |
+
+The `Settings` screen allows you to configure the boot delay in seconds and the number of drives provided by A2retroNET for the Apple II operating system.
+
+| Key              | Command                                                      |
+|:----------------:|--------------------------------------------------------------|
+| `Esc`            | Go back to `Drive Configuration` screen                      |
+| `Space` or `Tab` | Toggle between selecting a boot delay and a number of drives |
+| `Left` or `Up`   | Select a smaller boot delay or number of drives              |
+| `Right`or `Down` | Select a larger boot delay or number of drives               |
+| `0` - `9`        | Directly select a boot delay or number of drives             |
+
+### A2retroNET.txt
+
+To use a storage device with A2retroNET, the text file `A2retroNET.txt` must be present in the root directory. This file is formatted like a conventional INI file. There are two sections: `[settings]` and `[drives]`.
+
+The `[settings]` section contains the following entry type:
+
+* `bootdelay` allows you to set the time in seconds to wait for a key press when booting A2retroNET before the actual boot process begins. Valid values are `0` to `9`. The default value is `3`.
+
+The `[drives]` section contains the following entry types:
+
+* `number` allows you to set the number of drives provided by A2retroNET for the Apple II operating system. Valid values are `2`, `4`, `6` and `8`. The default value is `8`.
 
 * `1` through `8` indicate the name of the disk image to be used for the drive with the specified number.
 
 A simple example:
 ```
+[settings]
+bootdelay=5
 [drives]
 number=4
 1=system.hdv
@@ -90,6 +142,9 @@ Valid formats for disk image names:
 * `sd:image.hdv`
 * `sd:/image.hdv` (same as above)
 * `sd:/path/to/image.hdv`
+* `usb:image.hdv`
+* `usb:/image.hdv` (same as above)
+* `usb:/path/to/image.hdv`
 
 Notes:
 * No spaces are allowed around the `=`.
