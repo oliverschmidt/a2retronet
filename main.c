@@ -52,6 +52,7 @@ void main(void) {
     set_sys_clock_khz(170000, false);
 
     stdio_init_all();
+    printf("*** A2retroNET ***\n");
 
     tusb_init();
     sp_init();
