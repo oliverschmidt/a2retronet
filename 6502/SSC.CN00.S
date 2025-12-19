@@ -16,7 +16,7 @@
 
         ORG $C000+$0100*SLOT
 
-.IF BANK & 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.IF SSC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         BIT IORTS       ; SET THE V-FLAG
         BVS BENTRY      ; <ALWAYS>
@@ -182,7 +182,7 @@ CONFIG  JSR DSETUP
 
         ASC "OlSc"
 
-.IF BANK & 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.IF SSC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         ASC "APPLE"
 

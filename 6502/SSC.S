@@ -184,57 +184,45 @@ BLEAVE  EQU $CFFA       ; LEAVE A2RETRONET BASIC MODE
 ;;;;;;;;;;;;;;;;;;;;;
 ; BANKING ADDRESSES ;
 ;;;;;;;;;;;;;;;;;;;;;
-BANKSSC EQU $CFFB       ; EXPANSION ROM BANK FOR SSC
-BANKSP  EQU $CFFC       ; EXPANSION ROM BANK FOR SP
+BANKCLR EQU $CFFB       ; CLEAR EXPANSION ROM BANK
+BANKSET EQU $CFFC       ; SET EXPANSION ROM BANK
 
-.REPEAT 4,_BANK
-    .DEFINE BANK _BANK
+.REPEAT 2,_SSC
+    .DEFINE SSC _SSC
 
     .REPEAT 8,_SLOT
         .DEFINE SLOT _SLOT
 
-        .IF BANK <> 0 .OR SLOT <> 0
+        .IF SSC .OR SLOT
             .SCOPE
         .ENDIF
             .INCLUDE "SSC.CN00.S"
-        .IF BANK <> 0 .OR SLOT <> 0
+        .IF SSC .OR SLOT
             .ENDSCOPE
         .ENDIF
 
         .UNDEF SLOT
     .ENDREP
 
-    .IF BANK < 2
-
-        .IF BANK <> 0
-            .SCOPE
-        .ENDIF
-            .INCLUDE "SSC.C800.S"
-            .INCLUDE "SSC.HILEV.S"
-            .INCLUDE "SSC.TERM.S"
-            .INCLUDE "SSC.CORE.S"
-            .INCLUDE "SSC.UTIL.S"
-            .INCLUDE "SSC.CMD.S"
-            .INCLUDE "SSC.CF00.S"
-        .IF BANK <> 0
-            .ENDSCOPE
-        .ENDIF
-
-    .ELSE
-
-        .IF BANK <> 2
-            .SCOPE
-        .ENDIF
-            .INCLUDE "SMARTPORT.S"
-        .IF BANK <> 2
-            .ENDSCOPE
-        .ENDIF
-
+    .IF SSC
         .SCOPE
+    .ENDIF
+        .INCLUDE "SSC.C800.S"
+        .INCLUDE "SSC.HILEV.S"
+        .INCLUDE "SSC.TERM.S"
+        .INCLUDE "SSC.CORE.S"
+        .INCLUDE "SSC.UTIL.S"
+        .INCLUDE "SSC.CMD.S"
         .INCLUDE "SSC.CF00.S"
+    .IF SSC
         .ENDSCOPE
-
     .ENDIF
 
-    .UNDEF BANK
+    .UNDEF SSC
 .ENDREP
+
+.INCLUDE "SMARTPORT.S"
+
+.SCOPE
+.INCLUDE "SSC.CF00.S"
+.ENDSCOPE

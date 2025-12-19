@@ -16,80 +16,39 @@
 
         ORG $CF00
 
+;;;;;;;;
+; BOOT ;
+;;;;;;;;
+BOOT    LDA #$01        ; SMARTPORT FIRMWARE
+        STA BANKSET
+        JMP BOOT1
+
+PDBOOT  JSR PRODOS      ; CALL PRODOS HANDLER
+        LDA #$01        ; SMARTPORT FIRMWARE
+        STA BANKSET
+        JMP BOOT2
+
 ;;;;;;;;;;;;;;;;;;
 ; COMMON HANDLER ;
 ;;;;;;;;;;;;;;;;;;
-COMMON  STA BANKSP
+COMMON  LDA #$01        ; SMARTPORT FIRMWARE
+        STA BANKSET
         JMP SWITCH
 
 ;;;;;;;;;;;;;;;
 ; COMMON QUIT ;
 ;;;;;;;;;;;;;;;
-QUIT    STA BANKSSC
+QUIT    STA BANKCLR
         RTS
 
 ;;;;;;;;;;
 ; CONFIG ;
 ;;;;;;;;;;
-CFG     STA BANKSP
+CFG     LDA #$01        ; SMARTPORT FIRMWARE
+        STA BANKSET
         JSR CFGHDLR
-        STA BANKSSC
+        STA BANKCLR
         RTS
-
-;;;;;;;;;;;;;;;;
-; BOOT HANDLER ;
-;;;;;;;;;;;;;;;;
-BOOT    STA BANKSP
-        JSR CHECK
-        STA BANKSSC
-        BNE DOIT
-        JSR CFG
-
-DOIT    LDX #$01
-        STX CMD
-        LDA MSLOT
-        ASL
-        ASL
-        ASL
-        ASL
-        STA UNIT        ; DRIVE 1
-        DEX
-        STX ADDRL
-        LDY #>$0800
-        STY ADDRH
-        STX BLOCKL
-        STX BLOCKH
-        STA BANKSP
-        JSR PRODOS      ; CALL PRODOS HANDLER
-        STA BANKSSC
-        BCS FAILURE
-        LDY $0800       ; NUMBER OF DISK II SECTORS TO READ
-        DEY
-        BNE FAILURE     ; ... MUST BE 1
-        LDY $0801       ; FIRST OPCODE
-        BEQ FAILURE     ; ... MUSTN'T BE BRK
-        LDX UNIT
-        JMP $0801       ; GO FOR IT
-
-FAILURE LDY LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
-        BNE ERREXIT     ; ... MUST POINT TO A SLOT ROM START
-        LDY LOC1        ; POTENTIAL AUTOSTART SCAN ROM PTR HI
-        CPY MSLOT
-        BNE ERREXIT     ; ... MUST POINT TO CURRENT SLOT ROM
-        JMP SLOOP       ; LOOKS LIKE AUTOSTART SCAN SO CONTINUE SCAN
-
-ERREXIT JSR SETSCR
-        JSR SETKBD
-        JSR SETTXT
-        JSR HOME
-        LDY #$08        ; 'HDD ERROR'
-ERR     LDA ERRTEXT,Y
-        JSR COUT
-        DEY
-        BPL ERR
-        JMP BASIC
-
-ERRTEXT DFB 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$80, 'H'|$80
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ; BASIC INITIALIZATION ;

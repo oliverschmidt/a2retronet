@@ -32,13 +32,8 @@ SOFTWARE.
 
 #include "board.h"
 
-#define IOSEL_OFFSET  0x1000
-#define IOSTRB_OFFSET 0x2000
-
-#define IOSEL_BANK0  (offset &= ~IOSEL_OFFSET)
-#define IOSEL_BANK1  (offset |=  IOSEL_OFFSET)
-#define IOSTRB_BANK0 (offset &= ~IOSTRB_OFFSET)
-#define IOSTRB_BANK1 (offset |=  IOSTRB_OFFSET)
+#define OFFSET_NORMAL 0x0000
+#define OFFSET_SERIAL 0x1000
 
 extern const __attribute__((aligned(4))) uint8_t firmware[];
 
@@ -48,7 +43,9 @@ static const uint8_t __not_in_flash("ser_bits") ser_bits[] = {
     0b00111111,
     0b00011111};
 
-static volatile bool     active;
+static volatile bool serial;
+static volatile bool active;
+
 static volatile uint32_t offset;
 
 static volatile uint32_t self;
@@ -68,7 +65,7 @@ static void __time_critical_func(reset)(bool asserted) {
             return;
         }
         active = false;
-        IOSTRB_BANK0;
+        offset = serial ? OFFSET_SERIAL : OFFSET_NORMAL;
 
         ser_command = 0b00000000;
         ser_control = 0b00000000;
@@ -82,7 +79,8 @@ static void __time_critical_func(reset)(bool asserted) {
         assert_time = get_absolute_time();
     } else {
         if (absolute_time_diff_us(assert_time, get_absolute_time()) > 200000) {
-            IOSEL_BANK0;
+            serial = false;
+            offset = OFFSET_NORMAL;
         }
         assert_time = nil_time;
     }
@@ -176,57 +174,15 @@ static void __time_critical_func(sp_control_get)(void) {
     a2pico_putdata(pio0, sp_control);
 }
 
-static void __time_critical_func(basic_enter_get)(void) {
-    if (!active) {
-        return;
-    }
-    output_mask = 0b01111111;
-}
-
-static void __time_critical_func(basic_leave_get)(void) {
-    if (!active) {
-        return;
-    }
-    output_mask = 0b11111111;
-}
-
-static void __time_critical_func(iosel_bank0_get)(void) {
-    if (!active) {
-        return;
-    }
-    IOSEL_BANK0;
-}
-
-static void __time_critical_func(iosel_bank1_get)(void) {
-    if (!active) {
-        return;
-    }
-    IOSEL_BANK1;
-}
-
-static void __time_critical_func(iostrb_bank0_get)(void) {
-    if (!active) {
-        return;
-    }
-    IOSTRB_BANK0;
-}
-
-static void __time_critical_func(iostrb_bank1_get)(void) {
-    if (!active) {
-        return;
-    }
-    IOSTRB_BANK1;
-}
-
 static void __time_critical_func(deactivate_get)(void) {
     active = false;
 }
 
 static const void __not_in_flash("cffx_get")(*cffx_get[])(void) = {
-    sp_data_get,      sp_control_get,  nop_get,         nop_get,
-    nop_get,          nop_get,         nop_get,         nop_get,
-    nop_get,          basic_enter_get, basic_leave_get, iostrb_bank0_get,
-    iostrb_bank1_get, iosel_bank0_get, iosel_bank1_get, deactivate_get
+    sp_data_get, sp_control_get, nop_get, nop_get,
+    nop_get,     nop_get,        nop_get, nop_get,
+    nop_get,     nop_get,        nop_get, nop_get,
+    nop_get,     nop_get,        nop_get, deactivate_get
 };
 
 static void __time_critical_func(sp_data_put)(uint32_t data) {
@@ -257,32 +213,34 @@ static void __time_critical_func(basic_leave_put)(uint32_t data) {
     output_mask = 0b11111111;
 }
 
-static void __time_critical_func(iosel_bank0_put)(uint32_t data) {
+static void __time_critical_func(bank_clr_put)(uint32_t data) {
     if (!active) {
         return;
     }
-    IOSEL_BANK0;
+    offset = serial ? OFFSET_SERIAL : OFFSET_NORMAL;
 }
 
-static void __time_critical_func(iosel_bank1_put)(uint32_t data) {
+static void __time_critical_func(bank_set_put)(uint32_t data) {
     if (!active) {
         return;
     }
-    IOSEL_BANK1;
+    offset = OFFSET_SERIAL + (data << 11);
 }
 
-static void __time_critical_func(iostrb_bank0_put)(uint32_t data) {
+static void __time_critical_func(serial_false_put)(uint32_t data) {
     if (!active) {
         return;
     }
-    IOSTRB_BANK0;
+    serial = false;
+    offset = OFFSET_NORMAL;
 }
 
-static void __time_critical_func(iostrb_bank1_put)(uint32_t data) {
+static void __time_critical_func(serial_true_put)(uint32_t data) {
     if (!active) {
         return;
     }
-    IOSTRB_BANK1;
+    serial = true;
+    offset = OFFSET_SERIAL;
 }
 
 static void __time_critical_func(deactivate_put)(uint32_t data) {
@@ -290,10 +248,10 @@ static void __time_critical_func(deactivate_put)(uint32_t data) {
 }
 
 static const void __not_in_flash("cffx_put")(*cffx_put[])(uint32_t) = {
-    sp_data_put,      sp_control_put,  nop_put,         nop_put,
-    nop_put,          nop_put,         nop_put,         nop_put,
-    nop_put,          basic_enter_put, basic_leave_put, iostrb_bank0_put,     
-    iostrb_bank1_put, iosel_bank0_put, iosel_bank1_put, deactivate_put
+    sp_data_put,  sp_control_put,   nop_put,         nop_put,
+    nop_put,      nop_put,          nop_put,         nop_put,
+    nop_put,      basic_enter_put,  basic_leave_put, bank_clr_put,
+    bank_set_put, serial_false_put, serial_true_put, deactivate_put
 };
 
 void __time_critical_func(board)(void) {
@@ -315,7 +273,7 @@ void __time_critical_func(board)(void) {
             } else if (!io) {
                 devsel_get[addr & 0xF]();
             } else if (!strb || active) {
-                a2pico_putdata(pio0, firmware[offset | addr]);
+                a2pico_putdata(pio0, firmware[offset + addr]);
             }
         } else {
             uint32_t data = a2pico_getdata(pio0);

@@ -170,8 +170,8 @@ SWITCH  BCC PRODOS
 ; PRODOS HANDLER ;
 ;;;;;;;;;;;;;;;;;;
 PRODOS: ; WRITE PARAMETERS
-        LDY CMD
-        STY DATA
+        LDX CMD
+        STX DATA
         LDA UNIT
         STA DATA
         LDA BLOCKL
@@ -182,7 +182,7 @@ PRODOS: ; WRITE PARAMETERS
         ; DISPATCH COMMAND
         LDA #>$C800
         PHA
-        LDA PDCMD,Y
+        LDA PDCMD,X
         PHA
         RTS
 
@@ -342,25 +342,83 @@ WRPAGE  LDA (ADDRL),Y
         BNE WRPAGE
         RTS
 
-;;;;;;;;;;;;;;;;;;;;
-; CONFIG KEY CHECK ;
-;;;;;;;;;;;;;;;;;;;;
-CHECK   LDX #$FF
+;;;;;;;;;;;;;;;;
+; BOOT HANDLER ;
+;;;;;;;;;;;;;;;;
+BOOT1   LDX #$FF
 RETRY   LDA KBD
         BMI HAVEKEY
         INX
         STX DATA
         LDA #$40        ; CONFIG
         JSR WRCMD
-        BNE DONE
+        BNE DOBOOT
         LDA DATA
         STA $07F7
         BNE RETRY       ; ALWAYS
 HAVEKEY STA KBDSTRB
         CMP #'C'+$80
-        BEQ DONE
+        BEQ DOCFG
         CMP #'c'+$80 
-DONE    RTS
+        BNE DOBOOT
+DOCFG   JSR CFGHDLR
+
+DOBOOT  LDX #$01
+        STX CMD
+        LDA MSLOT
+        ASL
+        ASL
+        ASL
+        ASL
+        STA UNIT        ; DRIVE 1
+        DEX
+        STX ADDRL
+        LDA #>$0800
+        STA ADDRH
+        STX BLOCKL
+        STX BLOCKH
+        JMP PDBOOT      ; CALL PRODOS HANDLER
+
+BOOT2   BCS FAILURE
+        LDX $0800       ; NUMBER OF DISK II SECTORS TO READ
+        DEX
+        BNE FAILURE     ; ... MUST BE 1
+        LDA $0801       ; FIRST OPCODE
+        BEQ FAILURE     ; ... MUSTN'T BE BRK
+        LDA #>($0801-1)
+        PHA
+        LDA #<($0801-1)
+        PHA
+        LDX UNIT
+        JMP QUIT        ; GO FOR IT
+
+FAILURE LDA LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
+        BNE ERREXIT     ; ... MUST POINT TO A SLOT ROM START
+        LDA LOC1        ; POTENTIAL AUTOSTART SCAN ROM PTR HI
+        CMP MSLOT
+        BNE ERREXIT     ; ... MUST POINT TO CURRENT SLOT ROM
+        LDA #>(SLOOP-1)
+        PHA
+        LDA #<(SLOOP-1)
+        PHA
+        JMP QUIT        ; LOOKS LIKE AUTOSTART SCAN SO CONTINUE SCAN
+
+ERREXIT JSR SETSCR
+        JSR SETKBD
+        JSR SETTXT
+        JSR HOME
+        LDX #$08        ; 'HDD ERROR'
+ERR     LDA ERRTEXT,X
+        JSR COUT
+        DEX
+        BPL ERR
+        LDA #>(BASIC-1)
+        PHA
+        LDA #<(BASIC-1)
+        PHA
+        JMP QUIT
+
+ERRTEXT DFB 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$80, 'H'|$80
 
 ;;;;;;;;;;;;;;;;;;
 ; CONFIG HANDLER ;
