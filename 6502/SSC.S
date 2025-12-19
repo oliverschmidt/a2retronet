@@ -221,7 +221,28 @@ BANKSET EQU $CFFC       ; SET EXPANSION ROM BANK
     .UNDEF SSC
 .ENDREP
 
+;;;;;;;;;;
+; BANK 1 ;
+;;;;;;;;;;
 .INCLUDE "SMARTPORT.S"
+
+.SCOPE
+.INCLUDE "SSC.CF00.S"
+.ENDSCOPE
+
+;;;;;;;;;;
+; BANK 2 ;
+;;;;;;;;;;
+.RES $CF00-$C800
+
+.SCOPE
+.INCLUDE "SSC.CF00.S"
+.ENDSCOPE
+
+;;;;;;;;;;
+; BANK 3 ;
+;;;;;;;;;;
+.RES $CF00-$C800
 
 .SCOPE
 .INCLUDE "SSC.CF00.S"

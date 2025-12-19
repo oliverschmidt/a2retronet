@@ -23,7 +23,7 @@ BOOT    LDA #$01        ; SMARTPORT FIRMWARE
         STA BANKSET
         JMP BOOT1
 
-PDBOOT  JSR PRODOS      ; CALL PRODOS HANDLER
+PDBOOT  JSR PRODOS
         LDA #$01        ; SMARTPORT FIRMWARE
         STA BANKSET
         JMP BOOT2
@@ -39,6 +39,20 @@ COMMON  LDA #$01        ; SMARTPORT FIRMWARE
 ; COMMON QUIT ;
 ;;;;;;;;;;;;;;;
 QUIT    STA BANKCLR
+        RTS
+
+;;;;;;;;;;;;;;;;;;;;;;;
+; READ 512-BYTE BLOCK ;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+RDBLOCK LDA #$02        ; READ 1. PAGE CODE
+        STA BANKSET
+        JSR $C800
+        LDA #$03        ; READ 2. PAGE CODE
+        STA BANKSET
+        JSR $C800
+        LDA #$01        ; SMARTPORT FIRMWARE
+        STA BANKSET
         RTS
 
 ;;;;;;;;;;

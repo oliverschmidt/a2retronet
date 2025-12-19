@@ -2,7 +2,7 @@
 
 MIT License
 
-Copyright (c) 2024 Oliver Schmidt (https://a2retro.de/)
+Copyright (c) 2025 Oliver Schmidt (https://a2retro.de/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,15 @@ SOFTWARE.
 
 */
 
-#ifndef _SP_H
-#define _SP_H
+#ifndef _FIRMWARE_H
+#define _FIRMWARE_H
 
-#define CONTROL_NONE    0x00
-#define CONTROL_PRODOS  0x01
-#define CONTROL_SP      0x02
-#define CONTROL_CONFIG  0x40
-#define CONTROL_DONE    0x80
+#define OFFSET_NORMAL 0x0000
+#define OFFSET_SERIAL 0x1000
+#define OFFSET_BANK_1 0x2000
+#define OFFSET_BANK_2 0x2800
+#define OFFSET_BANK_3 0x3000
 
-extern volatile uint8_t  sp_control;
-extern volatile uint8_t  sp_buffer[0x0400];
-extern volatile uint16_t sp_read_offset;
-extern volatile uint16_t sp_write_offset;
-
-void sp_init(void);
-
-void sp_reset(void);
-
-void sp_task(void);
+extern __attribute__((aligned(4))) uint8_t firmware[];
 
 #endif

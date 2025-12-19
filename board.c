@@ -28,14 +28,10 @@ SOFTWARE.
 #include <pico/multicore.h>
 #include <a2pico.h>
 
+#include "firmware.h"
 #include "sp.h"
 
 #include "board.h"
-
-#define OFFSET_NORMAL 0x0000
-#define OFFSET_SERIAL 0x1000
-
-extern const __attribute__((aligned(4))) uint8_t firmware[];
 
 static const uint8_t __not_in_flash("ser_bits") ser_bits[] = {
     0b11111111,

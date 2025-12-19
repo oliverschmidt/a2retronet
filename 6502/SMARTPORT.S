@@ -51,7 +51,7 @@ PDRD    ; EXECUTE AND GET RETURN CODE
 
         ; READ BLOCK
         JSR RDBLOCK
-        BEQ PDOKAY      ; ALWAYS
+        JMP PDOKAY
 
 PDWR    ; WRITE BLOCK
         JSR WRBLOCK
@@ -173,6 +173,10 @@ PRODOS: ; WRITE PARAMETERS
         LDX CMD
         STX DATA
         LDA UNIT
+        STA DATA
+        LDA ADDRL
+        STA DATA
+        LDA ADDRH
         STA DATA
         LDA BLOCKL
         STA DATA
@@ -322,10 +326,12 @@ WRMORE  LDA (ADDRL),Y
         BNE WRMORE
 WRDONE  RTS
 
+.IF 0
 RDBLOCK ; READ 512-BYTE BLOCK
         LDY #$00
         JSR RDPAGE
         INC ADDRH
+.ENDIF
 RDPAGE  LDA DATA
         STA (ADDRL),Y
         INY
