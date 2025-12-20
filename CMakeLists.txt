@@ -37,7 +37,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         )
 target_sources(${PROJECT_NAME} PRIVATE
         sd_spi/sd_driver/crc.c
-        sd_spi/sd_driver/demo_logging.c
         sd_spi/sd_driver/hw_config.c
         sd_spi/sd_driver/sd_card.c
         sd_spi/sd_driver/sd_spi.c
