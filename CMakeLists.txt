@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME})
 pico_add_extra_outputs(${PROJECT_NAME})
 
 set(MEDIUM "SD" CACHE STRING "SD or USB")
+message("MEDIUM is ${MEDIUM}")
 if (MEDIUM STREQUAL "SD")
         target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM SD)
 elseif (MEDIUM STREQUAL "USB")
