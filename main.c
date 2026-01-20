@@ -54,11 +54,11 @@ void main(void) {
     stdio_init_all();
     printf("*** A2retroNET ***\n");
 
-    tusb_init();
     sp_init();
+    tusb_init();
 
     while (true) {
-        io_task();
         sp_task();
+        io_task();
     }
 }
