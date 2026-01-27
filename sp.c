@@ -218,7 +218,6 @@ static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
 }
 
 void sp_task(void) {
-
     if (sp_control == CONTROL_NONE || sp_control == CONTROL_DONE) {
         return;
     }
@@ -313,6 +312,8 @@ void sp_task(void) {
 
     sp_read_offset = sp_write_offset = 0;
     sp_control = CONTROL_DONE;
+
+    hdd_async();
 
 #ifdef PICO_DEFAULT_LED_PIN
     gpio_put(PICO_DEFAULT_LED_PIN, false);

@@ -49,7 +49,15 @@ static struct {
     uint16_t blocks;
     bool     error;
     bool     prot;
+    uint8_t  async;
 } hdd[MAX_DRIVES];
+
+static struct {
+bool     valid;
+int      drive;
+uint16_t block;
+uint8_t  data[BLOCK_SIZE];
+} async;
 
 static uint16_t get_blocks(int drive) {
     if (!hdd[drive].error && !f_size(&hdd[drive].image)) {
@@ -124,6 +132,7 @@ void hdd_reset(void) {
         }
     }
     memset(hdd, 0, sizeof(hdd));
+    async.valid = false;
 }
 
 void hdd_mount_usb(bool mount) {
@@ -206,29 +215,52 @@ uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
     return SUCCESS;
 }
 
-
 uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
 //    printf("HDD Write(Drive=d,Block=$%04X)\n", drive, block);
 
-    if (!seek_block(drive, block)) {
-        return IO_ERROR;
+    if (hdd[drive].async) {
+        uint8_t error = hdd[drive].async;
+        hdd[drive].async = SUCCESS;
+        return error;
+    }
+
+    async.valid = true;
+    async.drive = drive;
+    async.block = block;
+    memcpy(async.data, data, BLOCK_SIZE);
+
+    return SUCCESS;
+}
+
+void hdd_async(void) {
+    if (!async.valid) {
+        return;
+    }
+    async.valid = false;
+
+    if (!seek_block(async.drive, async.block)) {
+        hdd[async.drive].async = IO_ERROR;
+        return;
     }
 
     UINT bw;
-    FRESULT fr = f_write(&hdd[drive].image, data, BLOCK_SIZE, &bw);
+    FRESULT fr = f_write(&hdd[async.drive].image, async.data, BLOCK_SIZE, &bw);
     if (fr != FR_OK || bw != BLOCK_SIZE) {
         if (fr == FR_DENIED) {
-            return WRITE_PROT;
+            hdd[async.drive].async = WRITE_PROT;
+            return;
         }
-        printf("f_write(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
-        return IO_ERROR;
+        printf("f_write(%d) error: %s (%d)\n", async.drive, FRESULT_str(fr), fr);
+        hdd[async.drive].async = IO_ERROR;
+        return;
     }
 
-    fr = f_sync(&hdd[drive].image);
+    fr = f_sync(&hdd[async.drive].image);
     if (fr != FR_OK) {
-        printf("f_sync(%d) error: %s (%d)\n", drive, FRESULT_str(fr), fr);
-        return IO_ERROR;
+        printf("f_sync(%d) error: %s (%d)\n", async.drive, FRESULT_str(fr), fr);
+        hdd[async.drive].async = IO_ERROR;
+        return;
     }
 
-    return SUCCESS;
+    hdd[async.drive].async = SUCCESS;
 }
