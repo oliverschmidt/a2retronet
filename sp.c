@@ -110,21 +110,46 @@ void __time_critical_func(sp_reset)(void) {
 }
 
 void static sp_gen_read_page(uint16_t addr, const uint8_t *buffer, int offset) {
-    int last_data = -1;
+    bool ldx = true;
+    bool ldy = true;
+    int last = -1;
 
     for (int i = 0; i < 0x0100; i++) {
         uint8_t data = buffer[i];
 
-        if (last_data != data) {
-            last_data = data;
+        switch (data) {
+            case 0x00:
+                if (ldx) {
+                    ldx = false;
+                    firmware[offset++] = 0xA2;  // LDX
+                    firmware[offset++] = 0x00;
+                }
+                firmware[offset++] = 0x8E;  // STX
+                firmware[offset++] = addr & 0xFF;
+                firmware[offset++] = addr >> 8;
+                break;
 
-            firmware[offset++] = 0xA9;  // LDA
-            firmware[offset++] = data;
+            case 0x80:
+                if (ldy) {
+                    ldy = false;
+                    firmware[offset++] = 0xA0;  // LDY
+                    firmware[offset++] = 0x80;
+                }
+                firmware[offset++] = 0x8C;  // STY
+                firmware[offset++] = addr & 0xFF;
+                firmware[offset++] = addr >> 8;
+                break;
+
+            default:
+                if (last != data) {
+                    last = data;
+                    firmware[offset++] = 0xA9;  // LDA
+                    firmware[offset++] = data;
+                }
+                firmware[offset++] = 0x8D;  // STA
+                firmware[offset++] = addr & 0xFF;
+                firmware[offset++] = addr >> 8;
         }
-
-        firmware[offset++] = 0x8D;  // STA
-        firmware[offset++] = addr & 0xFF;
-        firmware[offset++] = addr >> 8;
 
         addr++;
     }
