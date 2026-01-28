@@ -219,6 +219,7 @@ static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
 
 void sp_task(void) {
     if (sp_control == CONTROL_NONE || sp_control == CONTROL_DONE) {
+        hdd_prefetch();
         return;
     }
 
@@ -230,7 +231,7 @@ void sp_task(void) {
         config();
         return;
     }
-       
+    
 #ifdef PICO_DEFAULT_LED_PIN
     gpio_put(PICO_DEFAULT_LED_PIN, true);
 #endif

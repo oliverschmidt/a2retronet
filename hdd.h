@@ -43,6 +43,8 @@ bool hdd_protected(uint8_t drive);
 
 uint8_t hdd_status(uint8_t drive, uint8_t *data);
 
+void hdd_prefetch(void);
+
 uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data);
 
 uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data);

@@ -57,6 +57,13 @@ bool     valid;
 int      drive;
 uint16_t block;
 uint8_t  data[BLOCK_SIZE];
+} prefetch;
+
+static struct {
+bool     valid;
+int      drive;
+uint16_t block;
+uint8_t  data[BLOCK_SIZE];
 } async;
 
 static uint16_t get_blocks(int drive) {
@@ -132,7 +139,8 @@ void hdd_reset(void) {
         }
     }
     memset(hdd, 0, sizeof(hdd));
-    async.valid = false;
+    prefetch.valid = false;
+    async.valid    = false;
 }
 
 void hdd_mount_usb(bool mount) {
@@ -198,8 +206,37 @@ uint8_t hdd_status(uint8_t drive, uint8_t *data) {
     return SUCCESS;
 }
 
+void hdd_prefetch(void) {
+    if (prefetch.valid) {
+        return;
+    }
+
+    if (!seek_block(prefetch.drive, prefetch.block)) {
+        return;
+    }
+
+    UINT br;
+    FRESULT fr = f_read(&hdd[prefetch.drive].image, prefetch.data, BLOCK_SIZE, &br);
+    if (fr != FR_OK || br != BLOCK_SIZE) {
+        return;
+    }
+
+    prefetch.valid = true;
+}
+
 uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
-//    printf("HDD Read(Drive=%d,Block=$%04X)\n", drive, block);
+//    printf("HDD Read(Drive=%d,Block=$%04X) - ", drive, block);
+
+    if (prefetch.valid &&
+        prefetch.drive == drive &&
+        prefetch.block == block) {
+
+//        printf("Prefetch\n");
+        prefetch.valid = false;
+        prefetch.block++;
+        memcpy(data, prefetch.data, BLOCK_SIZE);
+        return SUCCESS;
+    }
 
     if (!seek_block(drive, block)) {
         return IO_ERROR;
@@ -212,12 +249,18 @@ uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
         return IO_ERROR;
     }
 
+//    printf("Realtime\n");
+    prefetch.valid = false;
+    prefetch.drive = drive;
+    prefetch.block = block + 1;
+
     return SUCCESS;
 }
 
 uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
 //    printf("HDD Write(Drive=d,Block=$%04X)\n", drive, block);
 
+    // Check for pending error from last async write
     if (hdd[drive].async) {
         uint8_t error = hdd[drive].async;
         hdd[drive].async = SUCCESS;
