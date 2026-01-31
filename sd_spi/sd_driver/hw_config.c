@@ -37,7 +37,7 @@ static spi_t spis[] = {  // One for each SPI.
         .miso_gpio = GPIO_SPI0_RX,
         .mosi_gpio = GPIO_SPI0_TX,
         .sck_gpio  = GPIO_SPI0_SCK,
-        .baud_rate = 12500 * 1000
+        .baud_rate = 200000 * 1000 / 8  // 25 MHz
     }
 };
 
