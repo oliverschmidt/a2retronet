@@ -83,6 +83,8 @@ The A2retroNET firmware contains a configuration utility. It can be invoked in t
 
 The configuration utility provides a convenient way to edit the `A2retroNET.txt` configuration file directly from the Apple II. However, you can still edit `A2retroNET.txt` in a different way at any time. The title on each screen indicates wether you are editing `A2retroNET.txt` on the USB Thumb Drive or the Micro SD Card. 
 
+<img src="/assets/config-iie.jpg" width="400"> <img src="/assets/config-iip.jpg" width="400">
+
 The `Drive Configuration` screen allows you to configure which disk image file is used for which drive.
 
 | Key              | Command                                                                  |
