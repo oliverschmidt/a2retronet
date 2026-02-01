@@ -26,9 +26,9 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
-#if MEDIUM == SD
+#ifdef MEDIUM_SD
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
-#elif MEDIUM == USB
+#else
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_HOST   | OPT_MODE_FULL_SPEED)
 #endif
 

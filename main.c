@@ -37,10 +37,10 @@ SOFTWARE.
 #include "main.h"
 
 void io_task(void) {
-#if MEDIUM == SD
+#ifdef MEDIUM_SD
         tud_task();
         ser_task();
-#elif MEDIUM == USB
+#else
         tuh_task();
 #endif
 }

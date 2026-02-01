@@ -11,9 +11,9 @@ pico_add_extra_outputs(${PROJECT_NAME})
 set(MEDIUM "SD" CACHE STRING "SD or USB")
 message("MEDIUM is ${MEDIUM}")
 if (MEDIUM STREQUAL "SD")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM SD)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM_SD)
 elseif (MEDIUM STREQUAL "USB")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM USB)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM_USB)
 endif ()
 
 # Make sure TinyUSB can find tusb_config.h
