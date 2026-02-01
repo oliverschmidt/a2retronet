@@ -96,11 +96,6 @@ static uint8_t unit_to_drive(uint8_t unit) {
 
 void sp_init(void) {
     hdd_init();
-
-#ifdef PICO_DEFAULT_LED_PIN
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-#endif
 }
 
 void __time_critical_func(sp_reset)(void) {
@@ -231,10 +226,6 @@ void sp_task(void) {
         config();
         return;
     }
-    
-#ifdef PICO_DEFAULT_LED_PIN
-    gpio_put(PICO_DEFAULT_LED_PIN, true);
-#endif
 
 //    printf("SP Cmd(Type=$%02X,Bytes=$%04X)\n", sp_control, sp_write_offset);
     switch (sp_control) {
@@ -315,8 +306,4 @@ void sp_task(void) {
     sp_control = CONTROL_DONE;
 
     hdd_async();
-
-#ifdef PICO_DEFAULT_LED_PIN
-    gpio_put(PICO_DEFAULT_LED_PIN, false);
-#endif
 }

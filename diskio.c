@@ -7,6 +7,7 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
+#include <pico/stdlib.h>
 #include <ff.h>         // Obtains integer types
 #include <diskio.h>     // Declarations of disk functions
 #include <glue.h>       // Declarations of SD card functions
@@ -46,6 +47,9 @@ DSTATUS disk_status(
 DSTATUS disk_initialize(
     BYTE pdrv   // Physical drive number to identify the drive
 ) {
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+
     switch (pdrv) {
         case DEV_SD:
             return sd_disk_initialize(DEV_SD);
@@ -71,18 +75,26 @@ DRESULT disk_read(
     LBA_t sector,   // Start sector in LBA
     UINT count      // Number of sectors to read
 ) {
+    DRESULT result; 
+    gpio_put(PICO_DEFAULT_LED_PIN, true);
+
     switch (pdrv) {
         case DEV_SD:
-            return sd_disk_read(DEV_SD, buff, sector, count);
+            result = sd_disk_read(DEV_SD, buff, sector, count);
+            break;
 
 #ifdef MEDIUM_USB
         case DEV_USB:
-            return usb_disk_read(DEV_USB, buff, sector, count);
+            result = usb_disk_read(DEV_USB, buff, sector, count);
+            break;
 #endif
         
         default:
-            return RES_PARERR;
+            result = RES_PARERR;
     }
+
+    gpio_put(PICO_DEFAULT_LED_PIN, false);
+    return result;
 }
 
 
@@ -98,18 +110,26 @@ DRESULT disk_write(
     LBA_t sector,       // Start sector in LBA
     UINT count          // Number of sectors to write
 ) {
+    DRESULT result; 
+    gpio_put(PICO_DEFAULT_LED_PIN, true);
+
     switch (pdrv) {
         case DEV_SD:
-            return sd_disk_write(DEV_SD, buff, sector, count);
+            result = sd_disk_write(DEV_SD, buff, sector, count);
+            break;
 
 #ifdef MEDIUM_USB
         case DEV_USB:
-            return usb_disk_write(DEV_USB, buff, sector, count);
+            result = usb_disk_write(DEV_USB, buff, sector, count);
+            break;
 #endif
 
         default:
-            return RES_PARERR;
+            result = RES_PARERR;
     }
+
+    gpio_put(PICO_DEFAULT_LED_PIN, false);
+    return result;
 }
 
 #endif
