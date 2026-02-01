@@ -16,6 +16,15 @@ elseif (MEDIUM STREQUAL "USB")
         target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM_USB)
 endif ()
 
+execute_process(
+        COMMAND git describe --tags
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+message("GIT_TAG is ${GIT_TAG}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE GIT_TAG="${GIT_TAG}")
+
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 

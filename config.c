@@ -281,10 +281,11 @@ static bool settings(bool *put) {
             hdd_usb_mounted() ? "USB" : "SD");
         hline(1);
 
-        printfxy( 8, 4, false,      "Boot Delay:   Seconds");
-        printfxy(20, 4, state == 0, "%d", bootdelay);
-        printfxy( 8, 7, false,      "Drives No.:");
-        printfxy(20, 7, state == 1, "%d", drives_number);
+        printfxy( 8, 4, false,        "Boot Delay:   Seconds");
+        printfxy(20, 4, state == 0,   "%d", bootdelay);
+        printfxy( 8, 7, false,        "Drives No.:");
+        printfxy(20, 7, state == 1,   "%d", drives_number);
+        printfxy( 8, ROWS - 5, false, "Version " GIT_TAG);
         hline(ROWS - 2);
 
         // 0123456789012345678901234567890123456789
