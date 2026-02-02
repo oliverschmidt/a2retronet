@@ -53,17 +53,17 @@ static struct {
 } hdd[MAX_DRIVES];
 
 static struct {
-bool     valid;
-int      drive;
-uint16_t block;
-uint8_t  data[BLOCK_SIZE];
+             bool     valid;
+             int      drive;
+             uint16_t block;
+__aligned(4) uint8_t  data[BLOCK_SIZE];
 } prefetch;
 
 static struct {
-bool     valid;
-int      drive;
-uint16_t block;
-uint8_t  data[BLOCK_SIZE];
+             bool     valid;
+             int      drive;
+             uint16_t block;
+__aligned(4) uint8_t  data[BLOCK_SIZE];
 } async;
 
 static uint16_t get_blocks(int drive) {
@@ -113,6 +113,7 @@ static bool seek_block(int drive, uint16_t block) {
 
 void hdd_init(void) {
     time_init();
+printf("pf:%d\n", sizeof(prefetch));
 
     sd_card_t *sd_card = sd_get_by_num(0);
 
