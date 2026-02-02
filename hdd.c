@@ -113,7 +113,6 @@ static bool seek_block(int drive, uint16_t block) {
 
 void hdd_init(void) {
     time_init();
-printf("pf:%d\n", sizeof(prefetch));
 
     sd_card_t *sd_card = sd_get_by_num(0);
 
