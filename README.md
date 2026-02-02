@@ -101,7 +101,7 @@ The `Drive Configuration` screen allows you to configure which disk image file i
 | `0` or `A` - `Z` | Directly select a disk image file (or directory) with a matching name    |
 | `Ctrl-S`         | Enter `Settings` screen                                                  |
 
-The `Settings` screen allows you to configure the boot delay in seconds and the number of drives provided by A2retroNET for the Apple II operating system.
+The `Settings` screen allows you to configure the boot delay in seconds and the number of drives provided by A2retroNET for the Apple II operating system. Additionally, the A2retroNET version is displayed.
 
 | Key              | Command                                                      |
 |:----------------:|--------------------------------------------------------------|
