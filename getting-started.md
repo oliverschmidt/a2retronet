@@ -1,6 +1,10 @@
-# Getting Started
+## Getting Started
+
+### All Firmwares
 
 The firmware you selected at purchase is pre-flashed on your A2Pico. However, we recommend flashing A2Pico again if you're not 100% sure which firmware (variant) you chose, or simply want to make sure you're using the latest firmware.
+
+The list of A2retroNET projects can always be found at: https://github.com/oliverschmidt/a2pico
 
 Flashing your A2Pico is a breeze. All you need is a standard USB cable:
 1. Press and hold the `BOOTSEL` button on the A2Pico.
@@ -8,6 +12,8 @@ Flashing your A2Pico is a breeze. All you need is a standard USB cable:
 3. Release the `BOOTSEL` button. A new drive, `RPI-RP2`, will appear.
 3. Copy the firmware `.uf2` file to the `RPI-RP2` drive, e.g., by drag & drop.
 4. Disconnect the A2Pico from the PC. Done.
+
+### A2retroNET Firmware
 
 The latest A2retroNET firmware files can always be found at: https://github.com/oliverschmidt/a2retronet/releases/latest
 
