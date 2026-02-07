@@ -28,10 +28,10 @@
 
 .ELSE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-        CPX #$20        ; $CN01:$20
-        LDX #$00        ; $CN03:$00
-        CPY #$03        ; $CN05:$03
-        LDY #$00        ; $CN07:$00
+        CMP #$20        ; $CN01:$20
+        CMP #$00        ; $CN03:$00
+        CMP #$03        ; $CN05:$03
+        CMP #$3C        ; $CN07:$3C, WILL BE REPLACED WITH $00
         CLV
         BVC DENTRY      ; <ALWAYS> SKIP AROUND PASCAL 1.1 ENTRY
 

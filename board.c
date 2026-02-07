@@ -69,6 +69,10 @@ static void __time_critical_func(reset)(bool asserted) {
 
         output_mask = 0b11111111;
 
+        if (self) {
+            firmware[self] = 0x3C;  // Identify as Disk II
+        }
+
         multicore_fifo_drain();
         sp_reset();
 
@@ -282,7 +286,8 @@ void __time_critical_func(board)(void) {
 
         if (io && !strb) {
             active = true;
-            self   = addr;
+            self = addr & 0x0700 | 0x0007;
+            firmware[self] = 0x00;  // Identify as SmartPort
         }
     }
 }
