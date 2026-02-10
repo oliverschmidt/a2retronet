@@ -365,8 +365,24 @@ RETRY   LDA KBD
 HAVEKEY STA KBDSTRB
         CMP #'C'+$80
         BEQ DOCFG
-        CMP #'c'+$80 
-        BNE DOBOOT
+        CMP #'c'+$80
+        BEQ DOCFG
+        CMP #'N'+$80
+        BEQ FAILURE
+        CMP #'n'+$80
+        BEQ FAILURE
+        CMP #'1'+$80
+        BCC DOBOOT
+        CMP #'9'+$80
+        BCS DOBOOT
+        LDY #$64        ; SET BOOT
+        STY DATA
+        STA DATA
+        LDA #$40        ; CONFIG
+        JSR WRCMD
+        BEQ DOBOOT
+        BNE RETRY       ; ALWAYS
+
 DOCFG   JSR CFGHDLR
 
 DOBOOT  LDX #$01
@@ -445,11 +461,11 @@ CFGHDLR STA $C051       ; TEXT
         LDA $C01F       ; COLS?
         PHA
         STA $C00C       ; 40 COLS
-        LDA #$65        ; LOWERCASE
+        LDA #$66        ; LOWERCASE
         PHP
         BNE LOOP        ; ALWAYS
 UPPER   PHP
-        LDA #$64        ; UPPERCASE
+        LDA #$65        ; UPPERCASE
 
 LOOP    STA DATA
         LDA #$40        ; CONFIG

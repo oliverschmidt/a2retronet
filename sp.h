@@ -38,6 +38,8 @@ extern volatile uint8_t  sp_buffer[0x0400];
 extern volatile uint16_t sp_read_offset;
 extern volatile uint16_t sp_write_offset;
 
+extern uint8_t sp_boot;
+
 void sp_init(void);
 
 void sp_reset(void);

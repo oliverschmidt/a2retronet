@@ -47,12 +47,17 @@ SOFTWARE.
 #define SECTION_DRIVES      2
 
 #define CONFIG_I_KEY    0
+#define CONFIG_I_BOOT   1
 
 #define CONFIG_O_RETVAL 0
 #define CONFIG_O_BUFFER 1
 
-#define CONFIG_UPPERCASE    100
-#define CONFIG_LOWERCASE    101
+#define CONFIG_SET_BOOT     100
+#define CONFIG_UPPERCASE    101
+#define CONFIG_LOWERCASE    102
+
+#define BOOT_OKAY   0
+#define BOOT_FAIL   1
 
 #define DELAY_MORE  0
 #define DELAY_DONE  1
@@ -247,6 +252,17 @@ static void ack(uint8_t retval) {
     sp_control = CONTROL_DONE;
 }
 
+static void set_boot(uint8_t boot) {
+    uint8_t device = boot - 0x80 - '0';
+    if (device > drives_number) {
+        ack(BOOT_FAIL);
+        return;
+    }
+    sp_boot = device - 1;
+    printf("Set Boot(Drive=%d)\n", sp_boot);
+    ack(BOOT_OKAY);
+}
+
 static void delay(uint8_t counter) {
     if (counter < bootdelay * 10) {
         sleep_ms(100);
@@ -414,11 +430,17 @@ static void get_directory(char *path) {
 void config(void) {
     get_config();
 
+    if (sp_buffer[CONFIG_I_KEY] == CONFIG_SET_BOOT) {
+        set_boot(sp_buffer[CONFIG_I_BOOT]);
+        return;
+    }
+
     if (sp_buffer[CONFIG_I_KEY] < CONFIG_UPPERCASE) {
         delay(sp_buffer[CONFIG_I_KEY]);
         return;
     }
 
+    sp_boot = 0;
     lowercase = sp_buffer[CONFIG_I_KEY] == CONFIG_LOWERCASE;
 
     char dir[MAX_PATH];

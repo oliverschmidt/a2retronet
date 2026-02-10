@@ -86,12 +86,31 @@ volatile uint8_t  sp_buffer[0x0400];
 volatile uint16_t sp_read_offset;
 volatile uint16_t sp_write_offset;
 
+uint8_t sp_boot;
+
+static uint8_t adjust_boot(uint8_t drive) {
+    if (sp_boot == 0) {
+        return drive;
+    }
+    if (drive == 0) {
+        return sp_boot;
+    }
+    if (drive <= sp_boot) {
+        return drive - 1;
+    }
+}
+
 static uint8_t unit_to_drive(uint8_t unit) {
     uint8_t drive = unit >> 7;
     if ((unit >> 4 & 0x07) != board_slot()) {
         drive += 0x02;
-    } 
-    return drive;
+    }
+    return adjust_boot(drive);
+}
+
+static uint8_t device_to_drive(uint8_t device) {
+    uint8_t drive = device - 1;
+    return adjust_boot(drive);
 }
 
 void sp_init(void) {
@@ -174,7 +193,7 @@ static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
         if (params[SP_PARAM_CODE] == SP_STATUS_STS ||
             params[SP_PARAM_CODE] == SP_STATUS_DIB) {
             bool status = params[SP_PARAM_CODE] == SP_STATUS_STS;
-            if (!hdd_status(params[SP_PARAM_UNIT] - 1, &stat_list[2 + 1])) {
+            if (!hdd_status(device_to_drive(params[SP_PARAM_UNIT]), &stat_list[2 + 1])) {
                 stat_list[2 + 0] = hdd_protected(params[SP_PARAM_UNIT] - 1)
                                  ? 0b11110100   // block, write, read, online, protected
                                  : 0b11110000;  // block, write, read, online
@@ -205,11 +224,11 @@ static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
 }
 
 static uint8_t sp_readblk(uint8_t *params, uint8_t *buffer) {
-    return hdd_read(params[SP_PARAM_UNIT] - 1, *(uint16_t*)&params[SP_PARAM_BLOCK], buffer);
+    return hdd_read(device_to_drive(params[SP_PARAM_UNIT]), *(uint16_t*)&params[SP_PARAM_BLOCK], buffer);
 }
 
 static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
-    return hdd_write(params[SP_PARAM_UNIT] - 1, *(uint16_t*)&params[SP_PARAM_BLOCK], buffer);
+    return hdd_write(device_to_drive(params[SP_PARAM_UNIT]), *(uint16_t*)&params[SP_PARAM_BLOCK], buffer);
 }
 
 void sp_task(void) {
