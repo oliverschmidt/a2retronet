@@ -37,8 +37,6 @@ bool hdd_sd_mounted(void);
 
 bool hdd_usb_mounted(void);
 
-uint8_t hdd_drives(void);
-
 bool hdd_protected(uint8_t drive);
 
 uint8_t hdd_status(uint8_t drive, uint8_t *data);
