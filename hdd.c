@@ -258,7 +258,7 @@ uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
 }
 
 uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
-//    printf("HDD Write(Drive=d,Block=$%04X)\n", drive, block);
+//    printf("HDD Write(Drive=%d,Block=$%04X)\n", drive, block);
 
     // Check for pending error from last async write
     if (hdd[drive].async) {
