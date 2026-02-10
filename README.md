@@ -63,11 +63,22 @@ You can find the right adapter or cable to connect a USB Thumb Drive to A2Pico b
 
 Please ensure the A2Pico `USB Pwr` is set to `on` when using this firmware! 
 
+## Boot Delay
+
+While A2retroNET delays the boot, a countdown will be displayed in the lower right corner of the screen. The boot delay is configurable, and several keys are recognized.
+
+| Key              | Command                                                            |
+|:----------------:|--------------------------------------------------------------------|
+| `C`              | Invoke the configuration utility                                   |
+| `N`              | Continue the Apple II Autostart ROM slot search with the next slot |
+| `1` - `8`        | Directly boot a drive by temporarily making it drive 1             |
+| Any other key    | Skip the remaining boot delay                                      |
+
 ## Configuration Utility
 
 The A2retroNET firmware contains a configuration utility. It can be invoked in two ways:
 
-* By pressing the `C` key while A2retroNET delays the boot. During the boot delay, a countdown will be displayed in the lower right corner of the screen. Pressing any other key will skip the remaining boot delay. The boot delay is configurable.
+* By pressing the `C` key while A2retroNET delays the boot.
 
 * By calling `$C<n>F0`:
   
