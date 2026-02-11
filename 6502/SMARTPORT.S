@@ -363,14 +363,15 @@ RETRY   LDA KBD
         STA $07F7
         BNE RETRY       ; ALWAYS
 HAVEKEY STA KBDSTRB
+        CLV             ; NO ERROR TEXT
         CMP #'C'+$80
         BEQ DOCFG
         CMP #'c'+$80
         BEQ DOCFG
         CMP #'N'+$80
-        BEQ FAILURE
+        BEQ DONE
         CMP #'n'+$80
-        BEQ FAILURE
+        BEQ DONE
         CMP #'1'+$80
         BCC DOBOOT
         CMP #'9'+$80
@@ -401,12 +402,13 @@ DOBOOT  LDX #$01
         STX BLOCKH
         JMP PDBOOT      ; CALL PRODOS HANDLER
 
-BOOT2   BCS FAILURE
+BOOT2   BIT ERRTEXT     ; "SEV" -> ERROR TEXT 
+        BCS DONE
         LDX $0800       ; NUMBER OF DISK II SECTORS TO READ
         DEX
-        BNE FAILURE     ; ... MUST BE 1
+        BNE DONE        ; ... MUST BE 1
         LDA $0801       ; FIRST OPCODE
-        BEQ FAILURE     ; ... MUSTN'T BE BRK
+        BEQ DONE        ; ... MUSTN'T BE BRK
         LDA #>($0801-1)
         PHA
         LDA #<($0801-1)
@@ -414,27 +416,30 @@ BOOT2   BCS FAILURE
         LDX UNIT
         JMP QUIT        ; GO FOR IT
 
-FAILURE LDA LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
-        BNE ERREXIT     ; ... MUST POINT TO A SLOT ROM START
+DONE    LDA LOC0        ; POTENTIAL AUTOSTART SCAN ROM PTR LO
+        BNE EXIT        ; ... MUST POINT TO A SLOT ROM START
         LDA LOC1        ; POTENTIAL AUTOSTART SCAN ROM PTR HI
         CMP MSLOT
-        BNE ERREXIT     ; ... MUST POINT TO CURRENT SLOT ROM
+        BNE EXIT        ; ... MUST POINT TO CURRENT SLOT ROM
         LDA #>(SLOOP-1)
         PHA
         LDA #<(SLOOP-1)
         PHA
         JMP QUIT        ; LOOKS LIKE AUTOSTART SCAN SO CONTINUE SCAN
 
-ERREXIT JSR SETSCR
+EXIT    PHP             ; SAVE V
+        JSR SETSCR
         JSR SETKBD
         JSR SETTXT
         JSR HOME
+        PLP             ; RESTORE V
+        BVC COLD
         LDX #$08        ; 'HDD ERROR'
 ERR     LDA ERRTEXT,X
         JSR COUT
         DEX
         BPL ERR
-        LDA #>(BASIC-1)
+COLD    LDA #>(BASIC-1)
         PHA
         LDA #<(BASIC-1)
         PHA
