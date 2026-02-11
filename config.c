@@ -105,7 +105,7 @@ static void get_config(void) {
     while (true) {
         char line[MAX_PATH];
         char *success = f_gets(line, sizeof(line), &text);
-        if (!success) {
+        if (success == NULL) {
             if (f_error(&text)) {
                 printf("f_gets(A2retroNET.txt) error\n");
             }
@@ -371,7 +371,7 @@ static bool is_image(char *path) {
     static const char *ext_list[] = {".po", ".hdv", ".2mg"};
 
     char *ext = strrchr(path, '.');
-    if (!ext) {
+    if (ext == NULL) {
         return false;
     }
     for (int e = 0; e < sizeof(ext_list) / sizeof(ext_list[0]); e++) {

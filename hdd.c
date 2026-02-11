@@ -67,7 +67,7 @@ __aligned(4) uint8_t  data[BLOCK_SIZE];
 } async;
 
 static uint16_t get_blocks(int drive) {
-    if (!hdd[drive].error && !f_size(&hdd[drive].image)) {
+    if (!hdd[drive].error && f_size(&hdd[drive].image) == 0) {
         char *path = config_drivepath(drive);
 
         printf("HDD Open(Drive=%d,File=%s)\n", drive, path);
@@ -127,7 +127,7 @@ void hdd_init(void) {
 
 void hdd_reset(void) {
     for (int drive = 0; drive < MAX_DRIVES; drive++) {
-        if (!f_size(&hdd[drive].image)) {
+        if (f_size(&hdd[drive].image) == 0) {
             continue;
         }
 
@@ -196,7 +196,7 @@ uint8_t hdd_status(uint8_t drive, uint8_t *data) {
 
     uint16_t blocks = get_blocks(drive);
 
-    if (!blocks) {
+    if (blocks == 0) {
         return IO_ERROR;
     }
 
