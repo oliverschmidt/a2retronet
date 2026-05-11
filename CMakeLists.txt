@@ -87,6 +87,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         board.c
         config.c
         diskio.c
+        gen.c
         hdd.c
         incbin.S
         main.c

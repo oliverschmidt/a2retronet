@@ -32,6 +32,7 @@ SOFTWARE.
 #include "firmware.h"
 #include "config.h"
 #include "hdd.h"
+#include "gen.h"
 
 #include "sp.h"
 
@@ -123,60 +124,6 @@ void __time_critical_func(sp_reset)(void) {
     sp_buffer[0] = sp_buffer[1] = 0;
 }
 
-void static sp_gen_read_page(uint16_t addr, const uint8_t *buffer, int offset) {
-    bool ldx = true;
-    bool ldy = true;
-    int last = -1;
-
-    for (int i = 0; i < 0x0100; i++) {
-        uint8_t data = buffer[i];
-
-        switch (data) {
-            case 0x00:
-                if (ldx) {
-                    ldx = false;
-                    firmware[offset++] = 0xA2;  // LDX
-                    firmware[offset++] = 0x00;
-                }
-                firmware[offset++] = 0x8E;  // STX
-                firmware[offset++] = addr & 0xFF;
-                firmware[offset++] = addr >> 8;
-                break;
-
-            case 0x80:
-                if (ldy) {
-                    ldy = false;
-                    firmware[offset++] = 0xA0;  // LDY
-                    firmware[offset++] = 0x80;
-                }
-                firmware[offset++] = 0x8C;  // STY
-                firmware[offset++] = addr & 0xFF;
-                firmware[offset++] = addr >> 8;
-                break;
-
-            default:
-                if (last != data) {
-                    last = data;
-                    firmware[offset++] = 0xA9;  // LDA
-                    firmware[offset++] = data;
-                }
-                firmware[offset++] = 0x8D;  // STA
-                firmware[offset++] = addr & 0xFF;
-                firmware[offset++] = addr >> 8;
-        }
-
-        addr++;
-    }
-
-    firmware[offset] = 0x60;  // RTS
-}
-
-void static sp_gen_read_block(uint16_t addr, const uint8_t *buffer) {
-//    printf("SP Read(Addr=$%04X)\n", addr);
-    sp_gen_read_page(addr + 0x0000, buffer + 0x0000, OFFSET_BANK_2);
-    sp_gen_read_page(addr + 0x0100, buffer + 0x0100, OFFSET_BANK_3);
-}
-
 static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
     if (params[SP_PARAM_UNIT] == 0) {
         if (params[SP_PARAM_CODE] == SP_STATUS_STS) {
@@ -259,8 +206,8 @@ void sp_task(void) {
                     sp_buffer[PRODOS_O_RETVAL] = hdd_read(unit_to_drive(sp_buffer[PRODOS_I_UNIT]),
                                                           *(uint16_t*)&sp_buffer[PRODOS_I_BLOCK],
                                                           (uint8_t*)&sp_buffer[0x0200]);
-                    sp_gen_read_block(*(uint16_t*)&sp_buffer[PRODOS_I_BUFF],
-                                      (uint8_t*)&sp_buffer[0x0200]);
+                    gen_read_block(*(uint16_t*)&sp_buffer[PRODOS_I_BUFF],
+                                   (uint8_t*)&sp_buffer[0x0200]);
                     break;
                 case PRODOS_CMD_WRITE:
                     sp_buffer[PRODOS_O_RETVAL] = hdd_write(unit_to_drive(sp_buffer[PRODOS_I_UNIT]),
@@ -281,8 +228,8 @@ void sp_task(void) {
 //                    printf("SP CmdReadBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
                     sp_buffer[SP_O_RETVAL] = sp_readblk((uint8_t*)&sp_buffer[SP_I_PARAMS],
                                                         (uint8_t*)&sp_buffer[0x0200]);
-                    sp_gen_read_block(*(uint16_t*)&sp_buffer[SP_I_PARAMS + SP_PARAM_BUFF],
-                                      (uint8_t*)&sp_buffer[0x0200]);
+                    gen_read_block(*(uint16_t*)&sp_buffer[SP_I_PARAMS + SP_PARAM_BUFF],
+                                   (uint8_t*)&sp_buffer[0x0200]);
                     break;
                 case SP_CMD_WRITEBLK:
 //                    printf("SP CmdWriteBlock(Device=$%02X)\n", sp_buffer[SP_I_PARAMS]);
