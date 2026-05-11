@@ -84,18 +84,19 @@ add_custom_command(
         )
 
 target_sources(${PROJECT_NAME} PRIVATE
-        main.c
         board.c
         config.c
-        hdd.c
-        sp.c
         diskio.c
+        hdd.c
         incbin.S
+        main.c
+        sp.c
         )
 if (MEDIUM STREQUAL "SD")
         target_sources(${PROJECT_NAME} PRIVATE
-        ser.c
         msc_device.c
+        ser.c
+        slip.c
         usb_descriptors.c
         )
 elseif (MEDIUM STREQUAL "USB")
@@ -106,10 +107,10 @@ elseif (MEDIUM STREQUAL "USB")
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        pico_stdlib
-        pico_multicore
-        pico_unique_id
         a2pico
+        pico_multicore
+        pico_stdlib
+        pico_unique_id
         )
 if (MEDIUM STREQUAL "SD")
         target_link_libraries(${PROJECT_NAME} PRIVATE
