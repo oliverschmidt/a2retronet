@@ -45,9 +45,9 @@ The SSC functionality is set to `Printer Mode` (as opposed to `Communication Mod
 
 This firmware uses a Micro SD Card as its storage medium. When A2Pico is connected to a PC via USB (just as when flashing an A2Pico firmware), it acts as an SD Card reader. This allows access to the SD Card contents without having to open the Apple II and remove the SD Card. That functionality is independent of the Apple II's power-on state. The USB cable can be connected or disconnected at any time. However, be careful to not remove A2Pico from the Apple II slot while it is connected to a PC. Note that the SD Card reader will operate significantly slower than expected, as only a USB 1.1 Full Speed connection (12 Mbps) is available instead of the usual USB 2.0 Hi-Speed connection (480 Mbps).
 
-Any changes to the SD Card contents (e.g., replacing a disk image file) are detected by the Apple II in real time. This also applies to changes to the `A2retroNET.txt` configuration file in the SD Card root directory. Simply keep `A2retroNET.txt` open in Windows Notepad. Your changes will be applied immediately each time you save.
+Any changes to the SD Card contents (e.g., replacing a disk image file) are detected by the Apple II in real time. This also applies to changes to the active A2retroNET configuration file in the SD Card root directory. Simply keep the configuration file open in Windows Notepad. Your changes will be applied immediately each time you save.
 
-Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphone. The SD card contents will then be displayed in the smartphone's standard file browser. If you don't already have one, you'll only need a text file editor app to edit `A2retroNET.txt`. [EZText](https://apps.apple.com/de/app/eztext-text-editor/id1616281411) (for iOS) and [Simple Text Editor](https://play.google.com/store/apps/details?id=com.maxistar.textpad&hl=en) (for Android) are such (free, ad-free) apps. You can find the right adapter or cable to connect A2Pico to a smartphone (with USB-C port) by searching for "USB C OTG Micro USB".
+Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphone. The SD card contents will then be displayed in the smartphone's standard file browser. If you don't already have one, you'll only need a text file editor app to edit the A2retroNET configuration file. [EZText](https://apps.apple.com/de/app/eztext-text-editor/id1616281411) (for iOS) and [Simple Text Editor](https://play.google.com/store/apps/details?id=com.maxistar.textpad&hl=en) (for Android) are such (free, ad-free) apps. You can find the right adapter or cable to connect A2Pico to a smartphone (with USB-C port) by searching for "USB C OTG Micro USB".
 
 Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware! 
 
@@ -55,7 +55,7 @@ Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware!
 
 This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II reads from the SD Card approximately three times faster than from the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port for A2Pico](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
-Of course, this firmware can be used without an SD Card. However, it is particularily adventageous to use the SD Card to represent (fast) fixed hard drives and the Thumb Drive to represent (flexible) floppy drives. Without a Thumb Drive in place, the `A2retroNET.txt` configuration file is read from the SD Card. However, as soon as a Thumb Drive is plugged in, `A2retroNET.txt` is read from the Thumb Drive. This way, as with real hard drives and floppy drives, you can usually work with the hard drives only, but still quickly insert a floppy to try out something. Additionally, it is possible that the `A2retroNET.txt` configuration file on a Thumb Drive reference disk images on the SD Card, so that both storage media can be accessed simultaneuously. And finally it possible that a Thumb Drive only contains a `A2retroNET.txt` configuration file which overrides the one on the SD Card. Imagine simply plugging in a Thumb Drive to temporarily use the Total Replay hard disk image on the SD Card as boot disk, thus turning the Apple II into a game console.
+Of course, this firmware can be used without an SD Card. However, it is particularily adventageous to use the SD Card to represent (fast) fixed hard drives and the Thumb Drive to represent (flexible) floppy drives. Without a Thumb Drive in place, the configuration file is read from the SD Card. However, as soon as a Thumb Drive is plugged in, the configuration file is read from the Thumb Drive. This way, as with real hard drives and floppy drives, you can usually work with the hard drives only, but still quickly insert a floppy to try out something. Additionally, it is possible that the configuration file on a Thumb Drive references disk images on the SD Card, so that both storage media can be accessed simultaneuously. And finally it is possible that a Thumb Drive only contains a configuration file which overrides the one on the SD Card. Imagine simply plugging in a Thumb Drive to temporarily use the Total Replay hard disk image on the SD Card as boot disk, thus turning the Apple II into a game console.
 
 Note: Some Thumb Drives take several seconds to initialize. Therefore, a cold boot will use the SD Card. However, if no SD Card is present, the firmware waits until a Thumb Drive is plugged in and initialized.
 
@@ -73,6 +73,8 @@ While A2retroNET delays the boot, a countdown will be displayed in the lower rig
 | `N`              | Continue the Apple II Autostart ROM slot search with the next slot |
 | `1` - `8`        | Directly boot a drive by temporarily making it drive 1             |
 | Any other key    | Skip the remaining boot delay                                      |
+
+If multiple configuration files are available, the boot delay displays a configuration selection screen instead. The selection screen uses the boot delay of the preselected configuration; if that delay is `0`, the selection screen uses a three-second delay. Use `Up` / `Down` to choose a configuration, `Return` to boot it from drive 1, `1` - `8` to boot it from the selected drive, `C` to edit it, `N` to continue the slot search, or `Esc` to cancel the selection and boot the originally preselected configuration.
 
 ## Configuration Utility
 
@@ -92,7 +94,7 @@ The A2retroNET firmware contains a configuration utility. It can be invoked in t
   | 6               | `CALL 50928`  |
   | 7               | `CALL 51184`  |
 
-The configuration utility provides a convenient way to edit the `A2retroNET.txt` configuration file directly from the Apple II. However, you can still edit `A2retroNET.txt` in a different way at any time. The title on each screen indicates wether you are editing `A2retroNET.txt` on the USB Thumb Drive or the Micro SD Card. 
+The configuration utility provides a convenient way to edit the active A2retroNET configuration file directly from the Apple II. However, you can still edit the configuration file in a different way at any time. The title on each screen indicates wether you are editing the configuration on the USB Thumb Drive or the Micro SD Card.
 
 <img src="/assets/config-iie.jpg" width="400"> <img src="/assets/config-iip.jpg" width="400">
 
@@ -122,9 +124,11 @@ The `Settings` screen allows you to configure the boot delay in seconds and the 
 | `Right`or `Down` | Select a larger boot delay or number of drives               |
 | `0` - `9`        | Directly select a boot delay or number of drives             |
 
-### A2retroNET.txt
+### Configuration Files
 
-To use a storage device with A2retroNET, the text file `A2retroNET.txt` must be present in the root directory. This file is formatted like a conventional INI file. There are two sections: `[settings]` and `[drives]`.
+To use a storage device with A2retroNET, a configuration text file must be present in the root directory. The default configuration file is `A2retroNET.txt`. Configuration files are formatted like conventional INI files. There are two sections: `[settings]` and `[drives]`.
+
+Multiple configuration files can be placed in the root directory. The default configuration is `A2retroNET.txt`; additional configurations use the form `A2retroNET_name.txt`, for example `A2retroNET_games.txt`. Up to 16 configuration files are supported. If multiple configurations are present, A2retroNET displays a selection screen during the boot delay. The last selected configuration is stored in `A2retroNET.select` and preselected on the next boot. If there is no previous selection, `A2retroNET.txt` is selected; if it is not present, the first available configuration is selected. Deleting `A2retroNET.select` resets the selection to that default behavior.
 
 The `[settings]` section contains the following entry type:
 
@@ -170,8 +174,8 @@ Notes:
 Accessing the A2retroNET SmartPort controller can result in an error for various reasons, including:
 * Missing media
 * Corrupted media
-* Missing `A2retroNET.txt`
-* Malformed `A2retroNET.txt`
+* Missing configuration file
+* Malformed configuration file
 * Missing disk image
 * Corrupted disk image
 * Write protected disk image

@@ -60,6 +60,7 @@ RDBLOCK LDA #$02        ; READ 1. PAGE CODE
 ;;;;;;;;;;
 CFG     LDA #$01        ; SMARTPORT FIRMWARE
         STA BANKSET
+        LDY #$00        ; EDIT CONFIG
         JSR CFGHDLR
         STA BANKCLR
         RTS

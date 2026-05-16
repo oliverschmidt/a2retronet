@@ -358,6 +358,9 @@ RETRY   LDA KBD
         STX DATA
         LDA #$40        ; CONFIG
         JSR WRCMD
+        CMP #$02        ; SELECT CONFIG?
+        BEQ DOSEL
+        CMP #$00        ; DELAY MORE?
         BNE DOBOOT
         LDA DATA
         STA $07F7
@@ -384,7 +387,16 @@ HAVEKEY STA KBDSTRB
         BEQ DOBOOT
         BNE RETRY       ; ALWAYS
 
-DOCFG   JSR CFGHDLR
+DOSEL   LDY #$01        ; SELECT CONFIG
+        JSR CFGHDLR
+        CMP #$02        ; EDIT CONFIG?
+        BEQ DOCFG
+        CMP #$03        ; NEXT SLOT?
+        BEQ DONE
+        JMP DOBOOT
+
+DOCFG   LDY #$00        ; EDIT CONFIG
+        JSR CFGHDLR
 
 DOBOOT  LDX #$01
         STX CMD
@@ -450,7 +462,8 @@ ERRTEXT DFB 'R'|$80, 'O'|$80, 'R'|$80, 'R'|$80, 'E'|$80, ' '|$80, 'D'|$80, 'D'|$
 ;;;;;;;;;;;;;;;;;;
 ; CONFIG HANDLER ;
 ;;;;;;;;;;;;;;;;;;
-CFGHDLR STA $C051       ; TEXT
+CFGHDLR STY ZPTEMP      ; MODE
+        STA $C051       ; TEXT
         STA $C054       ; PAGE 1
         LDA $FBB3
         CMP #$38        ; APPLE ][
@@ -466,17 +479,27 @@ CFGHDLR STA $C051       ; TEXT
         LDA $C01F       ; COLS?
         PHA
         STA $C00C       ; 40 COLS
-        LDA #$66        ; LOWERCASE
-        PHP
+        LDA ZPTEMP
+        BEQ CFGLOW
+        LDA #$68        ; SELECT LOWERCASE
+        BNE CFGPHP      ; ALWAYS
+CFGLOW  LDA #$66        ; LOWERCASE
+CFGPHP  PHP
         BNE LOOP        ; ALWAYS
 UPPER   PHP
-        LDA #$65        ; UPPERCASE
+        LDA ZPTEMP
+        BEQ CFGUP
+        LDA #$67        ; SELECT UPPERCASE
+        BNE LOOP        ; ALWAYS
+CFGUP   LDA #$65        ; UPPERCASE
 
 LOOP    STA DATA
         LDA #$40        ; CONFIG
         JSR WRCMD
-        BNE SCRN        ; QUIT?
+        CMP #$01        ; CONTINUE?
+        BEQ SCRN
 
+CFGREST STA ZPTMP1
         PLP
         BEQ NOCHAR
         PLA             ; COLS
@@ -486,6 +509,7 @@ NOCOLS  PLA             ; CHARSET
         BMI NOCHAR      ; ALT CHARSET?
         STA $C00E       ; PRI CHARSET
 NOCHAR  JSR HOME
+        LDA ZPTMP1
         RTS
 
 SCRN    LDX #$00
@@ -496,10 +520,19 @@ CHAR    LDA DATA
         STA (BASL),Y
         INY
         CPY #$28        ; COLS
-        BCC CHAR 
+        BCC CHAR
         INX
         CPX #$18        ; ROWS
         BCC LINE
+
+        LDA ZPTEMP
+        BEQ GETKEY
+        LDA KBD
+        BPL NOKEY
+        STA KBDSTRB
+        BMI LOOP        ; ALWAYS
+NOKEY   LDA #$80        ; NO KEY
+        BNE LOOP        ; ALWAYS
 
 GETKEY  LDA KBD
         BPL GETKEY
