@@ -105,7 +105,7 @@ static uint8_t adjust_boot(uint8_t drive) {
 static uint8_t unit_to_drive(uint8_t unit) {
     uint8_t drive = unit >> 7;
     if ((unit >> 4 & 0x07) != board_slot()) {
-        drive += 0x02;
+        drive += 2;
     }
     return adjust_boot(drive);
 }

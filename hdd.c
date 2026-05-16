@@ -200,8 +200,8 @@ uint8_t hdd_status(uint8_t drive, uint8_t *data) {
         return IO_ERROR;
     }
 
-    data[0] = blocks % 0x100;
-    data[1] = blocks / 0x100;
+    data[0] = blocks % 0x0100;
+    data[1] = blocks / 0x0100;
 
     return SUCCESS;
 }
