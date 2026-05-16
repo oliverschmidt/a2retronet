@@ -33,6 +33,7 @@ SOFTWARE.
 #include "config.h"
 #include "hdd.h"
 #include "gen.h"
+#include "slip.h"
 
 #include "sp.h"
 
@@ -122,6 +123,9 @@ void __time_critical_func(sp_reset)(void) {
     sp_control = CONTROL_NONE;
     sp_read_offset = sp_write_offset = 0;
     sp_buffer[0] = sp_buffer[1] = 0;
+#if MEDIUM == SD
+    slip_reset();
+#endif
 }
 
 static uint8_t sp_stat(uint8_t *params, uint8_t *stat_list) {
@@ -179,6 +183,32 @@ static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
 }
 
 void sp_task(void) {
+#if MEDIUM == SD
+    if (!hdd_sd_mounted()) {
+        slip_task();
+
+        switch (sp_control) {
+
+            case CONTROL_NONE:
+            case CONTROL_DONE:
+                return;
+
+            case CONTROL_PRODOS:
+            case CONTROL_SP:
+                slip_command(sp_control, (uint8_t*)sp_buffer);
+                break;
+
+            case CONTROL_CONFIG:
+                sp_buffer[0] = 1;  // Skip Config
+                break;
+        }
+
+        sp_read_offset = sp_write_offset = 0;
+        sp_control = CONTROL_DONE;
+        return;
+    }
+#endif
+
     if (sp_control == CONTROL_NONE || sp_control == CONTROL_DONE) {
         hdd_prefetch();
         return;
