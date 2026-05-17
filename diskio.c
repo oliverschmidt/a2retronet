@@ -29,7 +29,7 @@ DSTATUS disk_status(
         case DEV_SD:
             return sd_disk_status(DEV_SD);
 
-#ifdef MEDIUM_USB
+#if HOST
         case DEV_USB:
             return usb_disk_status(DEV_USB);
 #endif
@@ -54,7 +54,7 @@ DSTATUS disk_initialize(
         case DEV_SD:
             return sd_disk_initialize(DEV_SD);
 
-#ifdef MEDIUM_USB
+#if HOST
         case DEV_USB:
             return usb_disk_initialize(DEV_USB);
 #endif
@@ -83,7 +83,7 @@ DRESULT disk_read(
             result = sd_disk_read(DEV_SD, buff, sector, count);
             break;
 
-#ifdef MEDIUM_USB
+#if HOST
         case DEV_USB:
             result = usb_disk_read(DEV_USB, buff, sector, count);
             break;
@@ -118,7 +118,7 @@ DRESULT disk_write(
             result = sd_disk_write(DEV_SD, buff, sector, count);
             break;
 
-#ifdef MEDIUM_USB
+#if HOST
         case DEV_USB:
             result = usb_disk_write(DEV_USB, buff, sector, count);
             break;
@@ -148,7 +148,7 @@ DRESULT disk_ioctl(
         case DEV_SD:
             return sd_disk_ioctl(DEV_SD, cmd, buff);
 
-#ifdef MEDIUM_USB
+#if HOST
         case DEV_USB:
             return usb_disk_ioctl(DEV_USB, cmd, buff);
 #endif

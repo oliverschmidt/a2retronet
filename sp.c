@@ -123,7 +123,7 @@ void __time_critical_func(sp_reset)(void) {
     sp_control = CONTROL_NONE;
     sp_read_offset = sp_write_offset = 0;
     sp_buffer[0] = sp_buffer[1] = 0;
-#if MEDIUM == SD
+#if HOST == 0
     slip_reset();
 #endif
 }
@@ -183,7 +183,7 @@ static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
 }
 
 void sp_task(void) {
-#if MEDIUM == SD
+#if HOST == 0
     if (!hdd_sd_mounted()) {
         slip_task();
 

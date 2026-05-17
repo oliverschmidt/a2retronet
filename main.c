@@ -37,11 +37,11 @@ SOFTWARE.
 #include "main.h"
 
 void io_task(void) {
-#ifdef MEDIUM_SD
+#if HOST
+        tuh_task();
+#else
         tud_task();
         ser_task();
-#else
-        tuh_task();
 #endif
 }
 

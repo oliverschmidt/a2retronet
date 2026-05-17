@@ -8,13 +8,9 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME})
 pico_add_extra_outputs(${PROJECT_NAME})
 
-set(MEDIUM "SD" CACHE STRING "SD or USB")
-message("MEDIUM is ${MEDIUM}")
-if (MEDIUM STREQUAL "SD")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM_SD)
-elseif (MEDIUM STREQUAL "USB")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE MEDIUM_USB)
-endif ()
+option(HOST "USB Host Mode")
+message("HOST is ${HOST}")
+target_compile_definitions(${PROJECT_NAME} PRIVATE HOST=$<BOOL:${HOST}>)
 
 execute_process(
         COMMAND git describe --tags
@@ -93,19 +89,19 @@ target_sources(${PROJECT_NAME} PRIVATE
         main.c
         sp.c
         )
-if (MEDIUM STREQUAL "SD")
+if(HOST)
         target_sources(${PROJECT_NAME} PRIVATE
-        msc_device.c
-        ser.c
-        slip.c
-        usb_descriptors.c
-        )
-elseif (MEDIUM STREQUAL "USB")
+                msc_host.c
+                usb_diskio.c
+                )
+else()
         target_sources(${PROJECT_NAME} PRIVATE
-        msc_host.c
-        usb_diskio.c
-        )
-endif ()
+                msc_device.c
+                ser.c
+                slip.c
+                usb_descriptors.c
+                )
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         a2pico
@@ -113,17 +109,17 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_stdlib
         pico_unique_id
         )
-if (MEDIUM STREQUAL "SD")
+if(HOST)
         target_link_libraries(${PROJECT_NAME} PRIVATE
-        tinyusb_device
-        )
-elseif (MEDIUM STREQUAL "USB")
+                tinyusb_host
+                )
+else()
         target_link_libraries(${PROJECT_NAME} PRIVATE
-        tinyusb_host
-        )
-endif ()
+                tinyusb_device
+                )
+endif()
 
-if (MEDIUM STREQUAL "SD")
+if(NOT HOST)
 
 add_custom_command(
         COMMAND cl65 -t apple2 apple2.lib -C apple2-asm.cfg -u __EXEHDR__
@@ -172,6 +168,7 @@ add_custom_target(disk
                                  SSC.HIDE.SYSTEM
                                  < ${CMAKE_CURRENT_BINARY_DIR}/SSC.HIDE.SYSTEM.as
         DEPENDS ssc_show_hide
-        VERBATIM)
+        VERBATIM
+        )
 
-endif ()
+endif()  # NOT HOST
