@@ -33,6 +33,8 @@ void hdd_reset(void);
 
 void hdd_mount_usb(bool);
 
+bool hdd_mounted(void);
+
 bool hdd_sd_mounted(void);
 
 bool hdd_usb_mounted(void);

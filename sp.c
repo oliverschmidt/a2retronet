@@ -184,7 +184,7 @@ static uint8_t sp_writeblk(uint8_t *params, const uint8_t *buffer) {
 
 void sp_task(void) {
 #if HOST == 0
-    if (!hdd_sd_mounted()) {
+    if (!hdd_mounted()) {
         slip_task();
 
         switch (sp_control) {
@@ -214,7 +214,7 @@ void sp_task(void) {
         return;
     }
 
-    if (!hdd_sd_mounted() && !hdd_usb_mounted()) {
+    if (!hdd_mounted()) {
         return;
     }
 

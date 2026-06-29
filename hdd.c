@@ -179,6 +179,10 @@ void hdd_mount_usb(bool mount) {
     }
 }
 
+bool hdd_mounted(void) {
+    return sd || usb;
+}
+
 bool hdd_sd_mounted(void) {
     return sd;
 }
