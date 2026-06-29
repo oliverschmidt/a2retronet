@@ -351,18 +351,20 @@ WRPAGE  LDA (ADDRL),Y
 ;;;;;;;;;;;;;;;;
 ; BOOT HANDLER ;
 ;;;;;;;;;;;;;;;;
-BOOT1   LDX #$FF
+BOOT1   LDX #$00
+        LDY $07F7
 RETRY   LDA KBD
         BMI HAVEKEY
-        INX
-        STX DATA
+        STX DATA        ; STATE
         LDA #$40        ; CONFIG
         JSR WRCMD
         BNE DOBOOT
+        LDX DATA        ; STATE
         LDA DATA
         STA $07F7
         BNE RETRY       ; ALWAYS
 HAVEKEY STA KBDSTRB
+        STY $07F7
         CLV             ; NO ERROR TEXT
         CMP #'C'+$80
         BEQ DOCFG
@@ -376,7 +378,7 @@ HAVEKEY STA KBDSTRB
         BCC DOBOOT
         CMP #'9'+$80
         BCS DOBOOT
-        LDY #$64        ; SET BOOT
+        LDY #$F0        ; SET BOOT
         STY DATA
         STA DATA
         LDA #$40        ; CONFIG
@@ -466,11 +468,11 @@ CFGHDLR STA $C051       ; TEXT
         LDA $C01F       ; COLS?
         PHA
         STA $C00C       ; 40 COLS
-        LDA #$66        ; LOWERCASE
+        LDA #$F2        ; LOWERCASE
         PHP
         BNE LOOP        ; ALWAYS
 UPPER   PHP
-        LDA #$65        ; UPPERCASE
+        LDA #$F1        ; UPPERCASE
 
 LOOP    STA DATA
         LDA #$40        ; CONFIG

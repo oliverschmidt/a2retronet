@@ -52,9 +52,9 @@ SOFTWARE.
 #define CONFIG_O_RETVAL 0
 #define CONFIG_O_BUFFER 1
 
-#define CONFIG_SET_BOOT     100
-#define CONFIG_UPPERCASE    101
-#define CONFIG_LOWERCASE    102
+#define CONFIG_SET_BOOT     240
+#define CONFIG_UPPERCASE    241
+#define CONFIG_LOWERCASE    242
 
 #define BOOT_OKAY   0
 #define BOOT_FAIL   1
@@ -91,6 +91,11 @@ static void get_config(void) {
     if (drives_number) {
         return;
     }
+
+    if (!hdd_mounted()) {
+        return;
+    }
+
     bootdelay = DEFAULT_BOOTDELAY;
     drives_number = MAX_DRIVES;
 
@@ -263,11 +268,28 @@ static void set_boot(uint8_t boot) {
     ack(BOOT_OKAY);
 }
 
-static void delay(uint8_t counter) {
-    if (counter < bootdelay * 10) {
+static void delay(uint8_t state) {
+    static const uint8_t spinner[] = {'/' + 0x80, '-' + 0x80, '\\' + 0x80, '|' + 0x80};
+
+    if (!hdd_mounted()) {
+        if (state < 0x80) {
+            state = 0x80;
+        }
         sleep_ms(100);
-        int seconds = bootdelay - counter / 10 - 1;
-        sp_buffer[CONFIG_O_BUFFER] = (seconds ? seconds + '0' : ' ') + 0x80;
+        sp_buffer[CONFIG_O_BUFFER + 0] = state == 0x83 ? 0x80 : state + 1;
+        sp_buffer[CONFIG_O_BUFFER + 1] = spinner[state - 0x80];
+        ack(DELAY_MORE);
+        return;
+    }
+
+    if (state >= 0x80) {
+        state = 0;
+    }
+    if (state < bootdelay * 10) {
+        sleep_ms(100);
+        int seconds = bootdelay - state / 10 - 1;
+        sp_buffer[CONFIG_O_BUFFER + 0] = state + 1;
+        sp_buffer[CONFIG_O_BUFFER + 1] = (seconds ? seconds + '0' : ' ') + 0x80;
         ack(DELAY_MORE);
         return;
     }
@@ -430,13 +452,17 @@ static void get_directory(char *path) {
 void config(void) {
     get_config();
 
-    if (sp_buffer[CONFIG_I_KEY] == CONFIG_SET_BOOT) {
-        set_boot(sp_buffer[CONFIG_I_BOOT]);
+    if (sp_buffer[CONFIG_I_KEY] < CONFIG_SET_BOOT) {
+        delay(sp_buffer[CONFIG_I_KEY]);
         return;
     }
 
-    if (sp_buffer[CONFIG_I_KEY] < CONFIG_UPPERCASE) {
-        delay(sp_buffer[CONFIG_I_KEY]);
+    if (!hdd_mounted()) {
+        return;
+    }
+
+    if (sp_buffer[CONFIG_I_KEY] == CONFIG_SET_BOOT) {
+        set_boot(sp_buffer[CONFIG_I_BOOT]);
         return;
     }
 

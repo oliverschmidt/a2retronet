@@ -214,12 +214,12 @@ void sp_task(void) {
         return;
     }
 
-    if (!hdd_mounted()) {
+    if (sp_control == CONTROL_CONFIG) {
+        config();
         return;
     }
 
-    if (sp_control == CONTROL_CONFIG) {
-        config();
+    if (!hdd_mounted()) {
         return;
     }
 
