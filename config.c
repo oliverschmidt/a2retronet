@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include "sp.h"
 #include "hdd.h"
+#include "slip.h"
 #include "main.h"
 
 #include "config.h"
@@ -271,7 +272,11 @@ static void set_boot(uint8_t boot) {
 static void delay(uint8_t state) {
     static const uint8_t spinner[] = {'/' + 0x80, '-' + 0x80, '\\' + 0x80, '|' + 0x80};
 
+#if HOST
     if (!hdd_mounted()) {
+#else
+    if (!hdd_mounted() && !slip_connected()) {
+#endif
         if (state < 0x80) {
             state = 0x80;
         }
@@ -458,6 +463,7 @@ void config(void) {
     }
 
     if (!hdd_mounted()) {
+        ack(CONFIG_QUIT);
         return;
     }
 

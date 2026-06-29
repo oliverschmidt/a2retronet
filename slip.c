@@ -100,6 +100,10 @@ void __time_critical_func(slip_reset)(void) {
     connected = false;
 }
 
+bool slip_connected(void) {
+    return connected;
+}
+
 static void send_byte(uint8_t data) {
     switch (data) {
         case END:

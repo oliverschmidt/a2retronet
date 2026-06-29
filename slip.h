@@ -29,6 +29,8 @@ SOFTWARE.
 
 void slip_reset(void);
 
+bool slip_connected(void);
+
 void slip_command(uint8_t control, uint8_t *buffer);
 
 void slip_task(void);

@@ -193,13 +193,13 @@ void sp_task(void) {
             case CONTROL_DONE:
                 return;
 
+            case CONTROL_CONFIG:
+                config();
+                break;
+
             case CONTROL_PRODOS:
             case CONTROL_SP:
                 slip_command(sp_control, (uint8_t*)sp_buffer);
-                break;
-
-            case CONTROL_CONFIG:
-                sp_buffer[0] = 1;  // Skip Config
                 break;
         }
 
