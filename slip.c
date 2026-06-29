@@ -164,10 +164,14 @@ static int recv_byte(bool idle) {
     while (true) {
         int data = tud_cdc_read_char();
         if (data == -1) {
-            if (connected == false ||
-                absolute_time_diff_us(time, get_absolute_time()) > (idle ? 5000 : 100) * 1000) {
+            if (!connected) {
                 state = STATE_IDL;
-                printf("recv_byte() error: %s\n", connected == false ? "reset" : "timeout");
+                printf("recv_byte() error: reset\n");
+                return -1;
+            }
+            if (absolute_time_diff_us(time, get_absolute_time()) > (idle ? 5000 : 100) * 1000) {
+                state = STATE_IDL;
+                printf("recv_byte() error: timeout\n");
                 return -1;
             }
             tud_task();
