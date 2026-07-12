@@ -29,6 +29,7 @@ SOFTWARE.
 #include <hardware/clocks.h>
 #include <hardware/structs/busctrl.h>
 #include <tusb.h>
+#include <a2pico.h>
 
 #include "board.h"
 #include "ser.h"
@@ -51,7 +52,7 @@ void main(void) {
 
     set_sys_clock_khz(200000, false);
 
-    stdio_init_all();
+    stdio_uart_init_full(uart0, PICO_DEFAULT_UART_BAUD_RATE, a2pico_tx(), a2pico_rx());
     printf("*** A2retroNET ***\n");
 
     sp_init();

@@ -28,36 +28,36 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 # modified in order to set some configuration options 
 target_include_directories(${PROJECT_NAME} PRIVATE
         fatfs/source
+        sd_spi/include
         )
 target_sources(${PROJECT_NAME} PRIVATE
         fatfs/source/ff.c
         fatfs/source/ffsystem.c
         fatfs/source/ffunicode.c
+        sd_spi/src/f_util.c
         )
 
-# https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico requires
-# glue.c to be modified in order to allow multiple FatFs devices
-target_include_directories(${PROJECT_NAME} PRIVATE
-        sd_spi/include
-        sd_spi/sd_driver
-        )
-target_sources(${PROJECT_NAME} PRIVATE
-        sd_spi/sd_driver/crc.c
-        sd_spi/sd_driver/hw_config.c
-        sd_spi/sd_driver/sd_card.c
-        sd_spi/sd_driver/sd_spi.c
-        sd_spi/sd_driver/spi.c
-        sd_spi/src/f_util.c
-        sd_spi/src/ff_stdio.c
-        sd_spi/src/glue.c
-        sd_spi/src/my_debug.c
-        sd_spi/src/rtc.c
-        )
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        hardware_dma
-        hardware_rtc
-        hardware_spi
-        )
+if (NOT PICO_RP2350)
+        # https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico requires
+        # glue.c to be modified in order to allow multiple FatFs devices
+        target_include_directories(${PROJECT_NAME} PRIVATE
+                sd_spi/sd_driver
+                )
+        target_sources(${PROJECT_NAME} PRIVATE
+                sd_spi/sd_driver/crc.c
+                sd_spi/sd_driver/hw_config.c
+                sd_spi/sd_driver/sd_card.c
+                sd_spi/sd_driver/sd_spi.c
+                sd_spi/sd_driver/spi.c
+                sd_spi/src/ff_stdio.c
+                sd_spi/src/glue.c
+                sd_spi/src/my_debug.c
+                )
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+                hardware_dma
+                hardware_spi
+                )
+endif()
 
 include(FetchContent)
 FetchContent_Declare(a2pico

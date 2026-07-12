@@ -8,6 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 #include <pico/stdlib.h>
+#include <a2pico.h>
 #include <ff.h>         // Obtains integer types
 #include <diskio.h>     // Declarations of disk functions
 #include <glue.h>       // Declarations of SD card functions
@@ -26,8 +27,11 @@ DSTATUS disk_status(
     BYTE pdrv   // Physical drive number to identify the drive
 ) {
     switch (pdrv) {
+
+#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_status(DEV_SD);
+#endif
 
 #if HOST
         case DEV_USB:
@@ -47,12 +51,17 @@ DSTATUS disk_status(
 DSTATUS disk_initialize(
     BYTE pdrv   // Physical drive number to identify the drive
 ) {
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+    if (a2pico_led() >= 0) {
+        gpio_init(a2pico_led());
+        gpio_set_dir(a2pico_led(), GPIO_OUT);
+    }
 
     switch (pdrv) {
+
+#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_initialize(DEV_SD);
+#endif
 
 #if HOST
         case DEV_USB:
@@ -76,12 +85,17 @@ DRESULT disk_read(
     UINT count      // Number of sectors to read
 ) {
     DRESULT result; 
-    gpio_put(PICO_DEFAULT_LED_PIN, true);
+    if (a2pico_led() >= 0) {
+        gpio_put(a2pico_led(), true);
+    }
 
     switch (pdrv) {
+
+#if !PICO_RP2350
         case DEV_SD:
             result = sd_disk_read(DEV_SD, buff, sector, count);
             break;
+#endif
 
 #if HOST
         case DEV_USB:
@@ -93,7 +107,9 @@ DRESULT disk_read(
             result = RES_PARERR;
     }
 
-    gpio_put(PICO_DEFAULT_LED_PIN, false);
+    if (a2pico_led() >= 0) {
+        gpio_put(a2pico_led(), false);
+    }
     return result;
 }
 
@@ -111,12 +127,17 @@ DRESULT disk_write(
     UINT count          // Number of sectors to write
 ) {
     DRESULT result; 
-    gpio_put(PICO_DEFAULT_LED_PIN, true);
+    if (a2pico_led() >= 0) {
+        gpio_put(a2pico_led(), true);
+    }
 
     switch (pdrv) {
+
+#if !PICO_RP2350
         case DEV_SD:
             result = sd_disk_write(DEV_SD, buff, sector, count);
             break;
+#endif
 
 #if HOST
         case DEV_USB:
@@ -128,7 +149,9 @@ DRESULT disk_write(
             result = RES_PARERR;
     }
 
-    gpio_put(PICO_DEFAULT_LED_PIN, false);
+    if (a2pico_led() >= 0) {
+        gpio_put(a2pico_led(), false);
+    }
     return result;
 }
 
@@ -145,8 +168,11 @@ DRESULT disk_ioctl(
     void *buff  // Buffer to send/receive control data
 ) {
     switch (pdrv) {
+
+#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_ioctl(DEV_SD, cmd, buff);
+#endif
 
 #if HOST
         case DEV_USB:
