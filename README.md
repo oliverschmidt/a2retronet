@@ -4,7 +4,7 @@ This project is based on [A2Pico](https://github.com/oliverschmidt/a2pico).
 
 A2retroNET implements a SmartPort mass storage controller with (up to) eight drives. The (currently) only supported disk image format is a ProDOS block image of up to 32MB, typically with the file extensions `.hdv`, `.po` or `.2mg`. There are two firmware variants:
 
-## A2retroNET.uf2
+## A2retroNET-Link.uf2
 
 This firmware not only provides a SmartPort controller but at the same time also [Super Serial Card (SSC)](https://en.wikipedia.org/wiki/Apple_II_serial_cards#Super_Serial_Card_(Apple_Computer)) functionality. Common so-called multicards create virtual cards in other Apple II slots. Those slots are then blocked for any other use. In contrast, A2retroNET implements both SmartPort and SSC functionality a __single__ Apple II slot - no other slot is blocked!
 
@@ -51,7 +51,7 @@ Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphon
 
 Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware! 
 
-## A2retroNET-USB.uf2
+## A2retroNET-Drive.uf2
 
 This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II reads from the SD Card approximately three times faster than from the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port for A2Pico](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
