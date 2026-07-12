@@ -18,8 +18,8 @@ Flashing your A2Pico is a breeze. All you need is a standard USB cable:
 The latest A2retroNET firmware files can always be found at: https://github.com/oliverschmidt/a2retronet/releases/latest
 
 There are two variants of the A2retroNET firmware:
-* `A2retroNET.uf2` allows access to the Micro SD Card from a connected PC and also emulates a Super Serial Card.
-* `A2retroNET-USB.uf2` allows the use of a USB Thumb Drive in addition to the Micro SD Card.
+* `A2retroNET-Link.uf2` allows access to the Micro SD Card from a connected PC and also emulates a Super Serial Card.
+* `A2retroNET-Drive.uf2` allows the use of a USB Thumb Drive in addition to the Micro SD Card.
 
 We recommend using a Micro SD Card for your first steps with both firmware variants. The Micro SD Card must be formatted with FAT, FAT32, or exFAT.
 
