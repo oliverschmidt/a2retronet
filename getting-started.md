@@ -10,8 +10,8 @@ Flashing your A2Pico is a breeze. All you need is a standard USB cable:
 1. Remove the A2Pico from your Apple II.
 2. Press and hold the `BOOTSEL` button on the A2Pico.
 3. Connect the A2Pico to a PC.
-4. Release the `BOOTSEL` button. A new drive, `RPI-RP2`, will appear.
-5. Copy the firmware `.uf2` file to the `RPI-RP2` drive, e.g., by drag & drop.
+4. Release the `BOOTSEL` button. A new drive, `RPI-RP2` or `RP2350`, will appear.
+5. Copy the firmware `.uf2` file to the `RPI-RP2` or `RP2350` drive, e.g., by drag & drop.
 6. Disconnect the A2Pico from the PC. Done.
 
 ### A2retroNET Firmware
