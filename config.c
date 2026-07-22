@@ -316,6 +316,71 @@ static int get_key(void) {
     return sp_buffer[CONFIG_I_KEY] - 0x80;
 }
 
+static bool help(void) {
+    clrscr();
+    printfxy(11, 0, false, "A2retroNET Help");
+    hline(1);
+
+    //            0123456789012345678901234567890123456789
+    printfxy( 0,  4, true,  "Esc");
+    printfxy(11,  4, false, "Quit configuration utility");
+
+    printfxy( 0,  5, true,  "Space");
+    printfxy( 5,  5, false, "/");
+    printfxy( 6,  5, true,  "Tab");
+    printfxy(11,  5, false, "Toggle between drive and disk");
+
+    printfxy( 0,  6, true,  "Left");
+    printfxy( 4,  6, false, "/");
+    printfxy( 5,  6, true,  "Up");
+    printfxy(11,  6, false, "Select previous");
+
+    printfxy( 0,  7, true,  "Right");
+    printfxy( 5,  7, false, "/");
+    printfxy( 6,  7, true,  "Down");
+    printfxy(11,  7, false, "Select next");
+
+    printfxy( 0,  8, true,  "Return");
+    printfxy(11,  8, false, "\"Insert\" disk in drive");
+
+    printfxy( 0,  9, true,  "-");
+    printfxy(11,  9, false, "\"Remove\" disk from drive");
+
+    printfxy( 0, 10, true,  "/");
+    printfxy(11, 10, false, "Go to root directory");
+
+    printfxy( 0, 11, true,  ":");
+    printfxy(11, 11, false, "Switch between disk sources");
+
+    printfxy( 0, 12, true,  "1");
+    printfxy( 1, 12, false, "-");
+    printfxy( 2, 12, true,  "8");
+    printfxy(11, 12, false, "Directly select drive");
+
+    printfxy( 0, 13, true,  "0");
+    printfxy( 1, 13, false, "/");
+    printfxy( 2, 13, true,  "A");
+    printfxy( 3, 13, false, "-");
+    printfxy( 4, 13, true,  "Z");
+    printfxy(11, 13, false, "Directly select disk");
+
+    printfxy( 0, 15, true,  "Ctrl-S");
+    printfxy(11, 15, false, "Enter Settings screen");
+
+    hline(ROWS - 2);
+
+    // 0123456789012345678901234567890123456789
+    // Esc
+    //    Back
+    printfxy( 0, ROWS - 1, true,  "Esc");
+    printfxy( 3, ROWS - 1, false, "Back");
+
+    if (get_key() == -1) {  // Ctrl-Reset
+        return true;
+    };
+    return false;
+}
+
 static bool settings(bool *put) {
     int state = 0;
 
@@ -525,16 +590,16 @@ void config(void) {
         hline(ROWS - 2);
 
         // 0123456789012345678901234567890123456789
-        // Esc     Space       Return       -
-        //    Back      Toggle       Insert  Remove
+        // Esc     Space       Return       ?
+        //    Quit      Toggle       Insert  Help
         printfxy( 0, ROWS - 1, true,  "Esc");
         printfxy( 3, ROWS - 1, false, "Quit");
         printfxy( 8, ROWS - 1, true,  "Space");
         printfxy(13, ROWS - 1, false, "Toggle");
         printfxy(20, ROWS - 1, true,  "Return");
         printfxy(26, ROWS - 1, false, "Insert");
-        printfxy(33, ROWS - 1, true,  "-");
-        printfxy(34, ROWS - 1, false, "Remove");
+        printfxy(33, ROWS - 1, true,  "?");
+        printfxy(34, ROWS - 1, false, "Help");
 
         int key = get_key();
         get_config();
@@ -544,6 +609,11 @@ void config(void) {
                 return;
             case 27:    // Esc
                 goto quit;
+            case '?':
+                if (help()) {
+                    return;
+                };
+                break;
             case 19:    // Ctrl-S
                 if (settings(&put)) {
                     return;
