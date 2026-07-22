@@ -28,6 +28,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <malloc.h>
 #include <pico/stdlib.h>
 #include <f_util.h>
 
@@ -79,7 +80,7 @@ static uint8_t drives_number;
 
 static bool lowercase;
 
-static FILINFO directory[MAX_DIR];
+static FILINFO *directory;
 
 static int directory_size;
 
@@ -414,6 +415,13 @@ static int directory_compare(const void *f1, const void *f2) {
 }
 
 static void get_directory(char *path) {
+    if (directory == NULL) {
+        directory = malloc(MAX_DIR * sizeof(FILINFO));
+        if (directory == NULL) {
+            return;
+        }
+    }
+
     directory_size = 0;
     directory[directory_size].fname[0] = '\0';
 
@@ -502,6 +510,9 @@ void config(void) {
 
         int entries = (ROWS - 2) - (4 + drives_number);
         for (int e = 0; e < entries; e++) {
+            if (directory == NULL) {
+                break;
+            }
             if (directory[start + e].fname[0] == '\0') {
                 break;
             }
@@ -634,5 +645,9 @@ void config(void) {
     if (put) {
         put_config();
     }
+
+    free(directory);
+    directory = NULL;
+
     ack(CONFIG_QUIT);
 }
