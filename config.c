@@ -270,6 +270,20 @@ static void set_boot(uint8_t boot) {
     ack(BOOT_OKAY);
 }
 
+bool wait_ms(uint32_t ms) {
+    absolute_time_t time = get_absolute_time();
+
+    while (true) {
+        if (sp_control == CONTROL_NONE) {  // Ctrl-Reset
+            return true;
+        }
+        if (absolute_time_diff_us(time, get_absolute_time()) > ms * 1000) {
+            return false;
+        }
+        io_task();
+    }
+}
+
 static void delay(uint8_t state) {
     static const uint8_t spinner[] = {'/' + 0x80, '-' + 0x80, '\\' + 0x80, '|' + 0x80};
 
@@ -281,7 +295,9 @@ static void delay(uint8_t state) {
         if (state < 0x80) {
             state = 0x80;
         }
-        sleep_ms(100);
+        if (wait_ms(100)) {
+            return;
+        }
         sp_buffer[CONFIG_O_BUFFER + 0] = state == 0x83 ? 0x80 : state + 1;
         sp_buffer[CONFIG_O_BUFFER + 1] = spinner[state - 0x80];
         ack(DELAY_MORE);
@@ -292,7 +308,9 @@ static void delay(uint8_t state) {
         state = 0;
     }
     if (state < bootdelay * 10) {
-        sleep_ms(100);
+        if (wait_ms(100)) {
+            return;
+        }
         int seconds = bootdelay - state / 10 - 1;
         sp_buffer[CONFIG_O_BUFFER + 0] = state + 1;
         sp_buffer[CONFIG_O_BUFFER + 1] = (seconds ? seconds + '0' : ' ') + 0x80;
