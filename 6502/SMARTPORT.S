@@ -503,9 +503,9 @@ CHAR    LDA DATA
         CPX #$18        ; ROWS
         BCC LINE
 
-GETKEY  LDA KBD
-        BPL GETKEY
+        LDA KBD
+        BPL LOOP
         STA KBDSTRB
-        BMI LOOP
+        BMI LOOP        ; ALWAYS
 
         .RES $CF00-*
