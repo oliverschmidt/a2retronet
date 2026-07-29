@@ -598,13 +598,37 @@ void config(void) {
     while (true) {
         clrscr();
         printfxy(2, 0, false, "A2retroNET Drive Configuration (%s)",
-            hdd_usb_mounted() ? "USB" : "SD");
+                 hdd_usb_mounted() ? "USB" : "SD");
         hline(1);
 
         for (int d = 0; d < drives_number; d++) {
             printfxy(0, 2 + d, drive == d, "%d", d + 1);
-            printfxy(2, 2 + d, drive == d && state == 0, "%s",
-                drives[d].path[0] ? drives[d].path : "<empty>");
+
+            const char *path = drives[d].path;
+            const int path_len = strlen(path);
+            if (path_len == 0) {
+                printfxy(2, 2 + d, drive == d && state == 0, "<empty>");
+                continue;
+            }
+
+            const char *colon = strchr(path, ':');
+            const char *slash = strrchr(path, '/');
+
+            if (path_len <= COLS - 2 || colon == NULL || slash == NULL || slash == colon + 1) {
+                printfxy(2, 2 + d, drive == d && state == 0, path);
+                continue;
+            }
+
+            const int proto_len = (colon - path) + 1;
+            const int file_len = path_len - (slash - path);
+
+            // Include the end of the path if the filename is short enough,
+            // otherwise simply show (as much as possible of) the filename
+            const char *show = proto_len + 3 + file_len <= COLS - 2
+                               ? path + proto_len + 3 + path_len - (COLS - 2)
+                               : slash;
+
+            printfxy(2, 2 + d, drive == d && state == 0, "%.*s...%s", proto_len, path, show);
         }
         hline(2 + drives_number);
 
@@ -622,7 +646,8 @@ void config(void) {
                 printfxy(0, 4 + drives_number + e, true, ">");
             }
             printfxy(2, 4 + drives_number + e, entry == e && state == 1,
-                directory[start + e].fattrib & AM_DIR ? "%s/" : "%s", directory[start + e].fname);
+                     directory[start + e].fattrib & AM_DIR ? "%s/" : "%s",
+                     directory[start + e].fname);
         }
         hline(ROWS - 2);
 
