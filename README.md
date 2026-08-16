@@ -69,6 +69,10 @@ Please ensure the A2Pico `USB Pwr` is set to `on` when using this firmware!
 
 This firmware uses a USB-C Thumb Drive as storage media. The Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB-C Port for A2Pico2Lite](https://jcm-1.com/product/external-usb-c-port-for-a2pico2-lite/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
+### A2Pico2Lite W
+
+This firmware uses a USB Thumb Drive as storage media. The Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port for A2Pico](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
+
 ## Boot Delay
 
 While A2retroNET delays the boot, a countdown will be displayed in the lower right corner of the screen. The boot delay is configurable, and several keys are recognized.
