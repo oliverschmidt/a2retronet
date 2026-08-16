@@ -21,7 +21,7 @@ The latest A2retroNET firmware files can always be found at: https://github.com/
 There are three variants of the A2retroNET firmware:
 * `A2retroNET-Link_A2Pico_<Release-Date>.uf2` allows access to the Micro SD Card from a connected PC and also emulates a Super Serial Card.
 * `A2retroNET-Drive_A2Pico_<Release-Date>.uf2` allows the use of a USB Thumb Drive in addition to the Micro SD Card.
-* `A2retroNET-Drive_A2Pico2Lite_<Release-Date>.uf2` allows exclusively for the use of a USB Thumb Drive.
+* `A2retroNET-Drive_A2Pico2_<Release-Date>.uf2` allows exclusively for the use of a USB Thumb Drive.
 
 The Micro SD Card or USB Thumb Drive must be formatted with FAT, FAT32, or exFAT.
 
@@ -31,7 +31,7 @@ Now, with the flashed A2Pico and the formatted Micro SD Card or USB Thumb Drive 
 
 2. Insert the Micro SD Card into the A2Pico or connect the USB Thumb Drive, and plug the A2Pico into an Apple II slot of your choice. We recommend slot 7.
 
-3. Turn on the Apple II. On an Enhanced //e or IIgs, you'll see a countdown starting with `3` in the lower right corner. On a ][+ or original //e, you'll need to type `PR#7` to start the countdown.
+3. Turn on the Apple II. You'll see a countdown starting with `3` in the lower right corner.
 
 4. Press the `C` key during the countdown.
 
