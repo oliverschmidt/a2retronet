@@ -228,6 +228,10 @@ static void hline(int y) {
 static void printfxy(int x, int y, bool inv, const char *format, ...) {
     char buffer[COLS + 1];
 
+    if (x >= COLS || y >= ROWS) {
+        return;
+    }
+
     va_list va;
     va_start(va, format);
     vsnprintf(buffer, sizeof(buffer) - x, format, va);
@@ -390,8 +394,11 @@ static bool help(void) {
         printfxy( 4, 13, true,  "Z");
         printfxy(11, 13, false, "Directly select disk");
 
-        printfxy( 0, 15, true,  "Ctrl-S");
-        printfxy(11, 15, false, "Enter Settings screen");
+        printfxy( 0, 14, true,  "Ctrl-E");
+        printfxy(11, 14, false, "Directly edit disk name");
+
+        printfxy( 0, 16, true,  "Ctrl-S");
+        printfxy(11, 16, false, "Enter Settings screen");
 
         hline(ROWS - 2);
 
@@ -564,6 +571,96 @@ static void get_directory(char *path) {
     qsort(directory, directory_size, sizeof(directory[0]), directory_compare);
 }
 
+void printsxy(int x, int y, char *str) {
+    if (lowercase) {
+        printfxy(x, y, false, str);
+        return;
+    }
+
+    for (int p = 0; str[p] != '\0'; p++) {
+        printfxy(x + p, y, isupper(str[p]), "%c", str[p]);  // Invert upper case
+    }
+}
+
+void printcxy(int x, int y) {
+    if (lowercase) {
+        printfxy(x, y, false, "\x7F");  // Checkerboard
+    } else {
+        printfxy(x, y, true,  "\x80");  // Flashing space
+    }
+}
+
+bool edit(int x, int y, int len, char *str, int size, bool *put) {
+    char *s = alloca(size);
+    strcpy(s, str);
+
+    int p = strlen(s);
+    bool shift = false;
+    
+    while (true) {
+        if (p < len) {
+            printsxy(x,           y, s);
+            printcxy(x + p,       y);
+            printfxy(x + p + 1,   y, false, " ");
+        } else {
+            printsxy(x,           y, s + p - len + 1);
+            printcxy(x + len - 1, y);
+        }
+
+        // 0123456789012345678901234567890123456789
+        // Esc     Return      Ctrl-S
+        //    Back       Enter       Shift To Upper
+        printfxy( 0, ROWS - 1, true,  "Esc");
+        printfxy( 3, ROWS - 1, false, "Back ");
+        printfxy( 8, ROWS - 1, true,  "Return");
+        printfxy(14, ROWS - 1, false, "Enter ");
+        if (lowercase) {
+            printfxy(20, ROWS - 1, false, "%20c", ' ');
+        } else {
+            printfxy(20, ROWS - 1, true,  "Ctrl-S");
+            printfxy(26, ROWS - 1, false, "Shift To %s", shift ? "Lower" : "Upper");
+        }
+
+        int key = get_key();
+        if (!hdd_mounted()) {
+            return false;
+        }
+
+        switch (key) {
+            case -1:    // Ctrl-Reset
+                return true;
+            case 27:    // Esc
+                return false;
+            case 13:    // Return
+                strcpy(str, s);
+                *put = true;
+                return false;
+            case 8:     // Left
+            case 127:   // Del
+                if (p > 0) {
+                    s[--p] = '\0';
+                }
+                break;
+            case 19:    // Ctrl-S
+                shift = !shift;
+                break;
+            default:
+                if (p < size - 1 && isprint(key)) {
+                    if (lowercase) {
+                        s[p] = key;
+                    } else {
+                        if (shift) {
+                            s[p] = toupper(key);
+                        } else {
+                            s[p] = tolower(key);
+                        }
+                    }
+                    s[++p] = '\0';
+                }
+        }        
+    }
+}
+
 void config(void) {
     if (sp_buffer[CONFIG_I_KEY] < CONFIG_SET_BOOT) {
         delay(sp_buffer[CONFIG_I_KEY]);
@@ -625,8 +722,8 @@ void config(void) {
             // Include the end of the path if the filename is short enough,
             // otherwise simply show (as much as possible of) the filename
             const char *show = proto_len + 3 + file_len <= COLS - 2
-                               ? path + proto_len + 3 + path_len - (COLS - 2)
-                               : slash;
+                             ? path + proto_len + 3 + path_len - (COLS - 2)
+                             : slash;
 
             printfxy(2, 2 + d, drive == d && state == 0, "%.*s...%s", proto_len, path, show);
         }
@@ -681,6 +778,11 @@ void config(void) {
                 break;
             case 19:    // Ctrl-S
                 if (settings(&put)) {
+                    return;
+                }
+                break;
+            case 5:     // Ctrl-E
+                if (edit(2, 2 + drive, COLS - 2, drives[drive].path, sizeof(drives[drive].path), &put)) {
                     return;
                 }
                 break;
