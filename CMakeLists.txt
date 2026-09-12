@@ -24,47 +24,32 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE GIT_TAG="${GIT_TAG}")
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-# http://elm-chan.org/fsw/ff/ requires ffconf.h to be
-# modified in order to set some configuration options 
-target_include_directories(${PROJECT_NAME} PRIVATE
-        fatfs/source
-        sd_spi/include
-        )
-target_sources(${PROJECT_NAME} PRIVATE
-        fatfs/source/ff.c
-        fatfs/source/ffsystem.c
-        fatfs/source/ffunicode.c
-        sd_spi/src/f_util.c
-        )
-
-if (NOT PICO_RP2350)
-        # https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico requires
-        # glue.c to be modified in order to allow multiple FatFs devices
-        target_include_directories(${PROJECT_NAME} PRIVATE
-                sd_spi/sd_driver
-                )
-        target_sources(${PROJECT_NAME} PRIVATE
-                sd_spi/sd_driver/crc.c
-                sd_spi/sd_driver/hw_config.c
-                sd_spi/sd_driver/sd_card.c
-                sd_spi/sd_driver/sd_spi.c
-                sd_spi/sd_driver/spi.c
-                sd_spi/src/ff_stdio.c
-                sd_spi/src/glue.c
-                sd_spi/src/my_debug.c
-                )
-        target_link_libraries(${PROJECT_NAME} PRIVATE
-                hardware_dma
-                hardware_spi
-                )
-endif()
-
 include(FetchContent)
+
 FetchContent_Declare(a2pico
         GIT_REPOSITORY https://github.com/oliverschmidt/a2pico.git
         GIT_TAG main
         )
 FetchContent_MakeAvailable(a2pico)
+
+FetchContent_Declare(fatfs
+        GIT_REPOSITORY https://github.com/FarLeftLane/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico.git
+        GIT_TAG main
+        SOURCE_SUBDIR src
+        )
+FetchContent_MakeAvailable(fatfs)
+
+target_compile_definitions(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico INTERFACE
+        FF_USE_STRFUNC=2
+        FF_VOLUMES=2
+        FF_STR_VOLUME_ID=1
+        FF_VOLUME_STRS="SD","USB"
+        GLUE_DISK_STATUS=sd_disk_status
+        GLUE_DISK_INITIALIZE=sd_disk_initialize
+        GLUE_DISK_READ=sd_disk_read
+        GLUE_DISK_WRITE=sd_disk_write
+        GLUE_DISK_IOCTL=sd_disk_ioctl
+        )
 
 set_source_files_properties(incbin.S OBJECT_DEPENDS firmware.rom)
 add_custom_command(
@@ -85,6 +70,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         diskio.c
         gen.c
         hdd.c
+        hw_config.c
         incbin.S
         main.c
         sp.c
@@ -105,6 +91,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         a2pico
+        no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
         pico_multicore
         pico_stdlib
         pico_unique_id

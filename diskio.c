@@ -28,10 +28,8 @@ DSTATUS disk_status(
 ) {
     switch (pdrv) {
 
-#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_status(DEV_SD);
-#endif
 
 #if HOST
         case DEV_USB:
@@ -58,10 +56,8 @@ DSTATUS disk_initialize(
 
     switch (pdrv) {
 
-#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_initialize(DEV_SD);
-#endif
 
 #if HOST
         case DEV_USB:
@@ -91,11 +87,9 @@ DRESULT disk_read(
 
     switch (pdrv) {
 
-#if !PICO_RP2350
         case DEV_SD:
             result = sd_disk_read(DEV_SD, buff, sector, count);
             break;
-#endif
 
 #if HOST
         case DEV_USB:
@@ -133,11 +127,9 @@ DRESULT disk_write(
 
     switch (pdrv) {
 
-#if !PICO_RP2350
         case DEV_SD:
             result = sd_disk_write(DEV_SD, buff, sector, count);
             break;
-#endif
 
 #if HOST
         case DEV_USB:
@@ -169,10 +161,8 @@ DRESULT disk_ioctl(
 ) {
     switch (pdrv) {
 
-#if !PICO_RP2350
         case DEV_SD:
             return sd_disk_ioctl(DEV_SD, cmd, buff);
-#endif
 
 #if HOST
         case DEV_USB:
