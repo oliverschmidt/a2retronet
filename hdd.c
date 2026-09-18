@@ -27,8 +27,10 @@ SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <f_util.h>
+
+#include <a2pico.h>
 #include <hw_config.h>
+#include <f_util.h>
 
 #include "config.h"
 #include "sp.h"
@@ -112,15 +114,15 @@ static bool seek_block(int drive, uint16_t block) {
 }
 
 void hdd_init(void) {
-#if !PICO_RP2350
-    sd_card_t *sd_card = sd_get_by_num(0);
-    FRESULT fr = f_mount(&sd_card->state.fatfs, "SD:", 1);
-    if (fr != FR_OK) {
-        printf("f_mount(SD:) error: %s (%d)\n", FRESULT_str(fr), fr);
-        return;
+    if (a2pico_sd()) {
+        sd_card_t *sd_card = sd_get_by_num(0);
+        FRESULT fr = f_mount(&sd_card->state.fatfs, "SD:", 1);
+        if (fr != FR_OK) {
+            printf("f_mount(SD:) error: %s (%d)\n", FRESULT_str(fr), fr);
+            return;
+        }
+        sd = true;
     }
-    sd = true;
-#endif
 }
 
 void hdd_reset(void) {
