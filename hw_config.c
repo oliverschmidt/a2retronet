@@ -20,9 +20,8 @@ https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/tree/main#customizing
 
 */
 
-#include <hw_config.h>
-
 #include <a2pico.h>
+#include <hw_config.h>
 
 #if PICO_RP2350
 

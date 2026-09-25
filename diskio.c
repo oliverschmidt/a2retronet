@@ -8,6 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 #include <pico/stdlib.h>
+
 #include <a2pico.h>
 #include <ff.h>         // Obtains integer types
 #include <diskio.h>     // Declarations of disk functions
