@@ -47,7 +47,7 @@ This firmware uses a Micro SD Card as its storage medium. When A2Pico is connect
 
 Any changes to the SD Card contents (e.g., replacing a disk image file) are detected by the Apple II in real time. This also applies to changes to the `A2retroNET.txt` configuration file in the SD Card root directory. Simply keep `A2retroNET.txt` open in Windows Notepad. Your changes will be applied immediately each time you save.
 
-Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphone. The SD card contents will then be displayed in the smartphone's standard file browser. If you don't already have one, you'll only need a text file editor app to edit `A2retroNET.txt`. [EZText](https://apps.apple.com/de/app/eztext-text-editor/id1616281411) (for iOS) and [Simple Text Editor](https://play.google.com/store/apps/details?id=com.maxistar.textpad&hl=en) (for Android) are such (free, ad-free) apps. You can find the right adapter or cable to connect A2Pico to a smartphone (with USB-C port) by searching for "USB C OTG Micro USB".
+Note: Instead of connecting to a PC, A2Pico can also be connected to a smartphone. The SD Card contents will then be displayed in the smartphone's standard file browser. If you don't already have one, you'll only need a text file editor app to edit `A2retroNET.txt`. [EZText](https://apps.apple.com/de/app/eztext-text-editor/id1616281411) (for iOS) and [Simple Text Editor](https://play.google.com/store/apps/details?id=com.maxistar.textpad&hl=en) (for Android) are such (free, ad-free) apps. You can find the right adapter or cable to connect A2Pico (with Micro-USB port) to a smartphone (with USB-C port) by searching for "USB C OTG Micro USB".
 
 Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware! 
 
