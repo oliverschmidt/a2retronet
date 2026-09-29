@@ -53,25 +53,19 @@ Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware!
 
 ## A2retroNET-Drive.uf2
 
-### A2Pico
+### A2Pico and A2Pico2
 
-This firmware uses both a USB Thumb Drive and a Micro SD Card as storage media. Note that the Apple II reads from the SD Card approximately three times faster than from the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port for A2Pico](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
+This firmware uses both a USB(-C) Thumb Drive and a Micro SD Card as storage media. Note that the Apple II reads from the SD Card approximately three times faster than from the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/) or the [External USB-C Port](https://jcm-1.com/product/external-usb-c-port-for-a2pico2-lite/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
 Of course, this firmware can be used without an SD Card. However, it is particularily adventageous to use the SD Card to represent (fast) fixed hard drives and the Thumb Drive to represent (flexible) floppy drives. Without a Thumb Drive in place, the `A2retroNET.txt` configuration file is read from the SD Card. However, as soon as a Thumb Drive is plugged in, `A2retroNET.txt` is read from the Thumb Drive. This way, as with real hard drives and floppy drives, you can usually work with the hard drives only, but still quickly insert a floppy to try out something. Additionally, it is possible that the `A2retroNET.txt` configuration file on a Thumb Drive reference disk images on the SD Card, so that both storage media can be accessed simultaneuously. And finally it possible that a Thumb Drive only contains a `A2retroNET.txt` configuration file which overrides the one on the SD Card. Imagine simply plugging in a Thumb Drive to temporarily use the Total Replay hard disk image on the SD Card as boot disk, thus turning the Apple II into a game console.
-
-You can find the right adapter or cable to connect a USB Thumb Drive to A2Pico by searching for "Micro USB OTG".
 
 Note: Some Thumb Drives take several seconds to initialize. Therefore, a cold boot will use the SD Card. However, if no SD Card is present, the firmware waits until a Thumb Drive is plugged in and initialized.
 
 Please ensure the A2Pico `USB Pwr` is set to `on` when using this firmware! 
 
-### A2Pico2Lite
+### A2Pico2Lite and A2Pico2Lite W
 
-This firmware uses a USB-C Thumb Drive as storage media. The Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB-C Port for A2Pico2Lite](https://jcm-1.com/product/external-usb-c-port-for-a2pico2-lite/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
-
-### A2Pico2Lite W
-
-This firmware uses a USB Thumb Drive as storage media. The Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port for A2Pico](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
+This firmware uses a USB(-C) Thumb Drive as storage media. The Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/) or the [External USB-C Port](https://jcm-1.com/product/external-usb-c-port-for-a2pico2-lite/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
 ## Boot Delay
 
@@ -120,7 +114,9 @@ The `Drive Configuration` screen allows you to configure which disk image file i
 | `:`              | Switch between selecting from the USB Thumb Drive and the Micro SD Card  |
 | `1` - `8`        | Directly select a drive                                                  |
 | `0` or `A` - `Z` | Directly select a disk image file (or directory) with a matching name    |
+| `Ctrl-E`         | Directly edit the selected disk image file name                          |
 | `Ctrl-S`         | Enter `Settings` screen                                                  |
+| `?`              | Enter `Help` screen                                                      |
 
 The `Settings` screen allows you to configure the boot delay in seconds and the number of drives provided by A2retroNET for the Apple II operating system. Additionally, the A2retroNET version is displayed.
 
