@@ -20,7 +20,6 @@ https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/tree/main#customizing
 
 */
 
-#include <a2pico.h>
 #include <hw_config.h>
 
 #if PICO_RP2350
@@ -38,8 +37,8 @@ static sd_sdio_if_t sdio_if = {
         D2_gpio = D0_gpio + 2;
         D3_gpio = D0_gpio + 3;
     */
-    .CMD_gpio  = GPIO_SDIO_CMD,
-    .D0_gpio   = GPIO_SDIO_DAT0,
+    .CMD_gpio  = PICO_SD_CMD_PIN,
+    .D0_gpio   = PICO_SD_DAT0_PIN,
     .SDIO_PIO  = pio2,
     .baud_rate = 200 * 1000 * 1000 / 4  // 50 MHz
 };
@@ -55,17 +54,17 @@ static sd_card_t sd_card = {
 
 /* Configuration of hardware SPI object */
 static spi_t spi = {
-    .hw_inst   = spi0,                  // SPI component
-    .sck_gpio  = GPIO_SPI0_SCK,         // GPIO number (not Pico pin number)
-    .mosi_gpio = GPIO_SPI0_TX,
-    .miso_gpio = GPIO_SPI0_RX,
-    .baud_rate = 200 * 1000 * 1000 / 8  // 25 MHz
+    .hw_inst   = SPI_INSTANCE(PICO_DEFAULT_SPI),  // SPI component
+    .sck_gpio  = PICO_DEFAULT_SPI_SCK_PIN,        // GPIO number (not Pico pin number)
+    .mosi_gpio = PICO_DEFAULT_SPI_TX_PIN,
+    .miso_gpio = PICO_DEFAULT_SPI_RX_PIN,
+    .baud_rate = 200 * 1000 * 1000 / 8            // 25 MHz
 };
 
 /* SPI Interface */
 static sd_spi_if_t spi_if = {
-    .spi     = &spi,          // Pointer to the SPI driving this card
-    .ss_gpio = GPIO_SPI0_CSN  // The SPI slave select GPIO for this SD card
+    .spi     = &spi,                     // Pointer to the SPI driving this card
+    .ss_gpio = PICO_DEFAULT_SPI_CSN_PIN  // The SPI slave select GPIO for this SD card
 };
 
 /* Configuration of the SD Card socket object */

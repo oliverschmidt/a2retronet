@@ -1,6 +1,13 @@
 set(PROJECT_NAME A2retroNET)
-
 cmake_minimum_required(VERSION 3.13...3.27)
+
+include(FetchContent)
+FetchContent_Declare(a2pico
+        GIT_REPOSITORY https://github.com/oliverschmidt/a2pico.git
+        GIT_TAG main
+        )
+FetchContent_MakeAvailable(a2pico)
+
 include(pico_sdk_import.cmake)
 project(${PROJECT_NAME} C CXX ASM)
 pico_sdk_init()
@@ -23,14 +30,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE GIT_TAG="${GIT_TAG}")
 
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-
-include(FetchContent)
-
-FetchContent_Declare(a2pico
-        GIT_REPOSITORY https://github.com/oliverschmidt/a2pico.git
-        GIT_TAG main
-        )
-FetchContent_MakeAvailable(a2pico)
 
 FetchContent_Declare(fatfs
         GIT_REPOSITORY https://github.com/FarLeftLane/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico.git
