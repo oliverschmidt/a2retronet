@@ -54,18 +54,18 @@ static struct {
     uint8_t  async;
 } hdd[MAX_DRIVES];
 
+__aligned(4) uint8_t cache[BLOCK_SIZE];
+
 static struct {
              bool     valid;
              int      drive;
              uint16_t block;
-__aligned(4) uint8_t  data[BLOCK_SIZE];
 } prefetch;
 
 static struct {
              bool     valid;
              int      drive;
              uint16_t block;
-__aligned(4) uint8_t  data[BLOCK_SIZE];
 } async;
 
 static uint16_t get_blocks(int drive) {
@@ -211,7 +211,7 @@ uint8_t hdd_status(uint8_t drive, uint8_t *data) {
 }
 
 void hdd_prefetch(void) {
-    if (prefetch.valid) {
+    if (prefetch.valid || async.valid) {
         return;
     }
 
@@ -220,7 +220,7 @@ void hdd_prefetch(void) {
     }
 
     UINT br;
-    FRESULT fr = f_read(&hdd[prefetch.drive].image, prefetch.data, BLOCK_SIZE, &br);
+    FRESULT fr = f_read(&hdd[prefetch.drive].image, cache, BLOCK_SIZE, &br);
     if (fr != FR_OK || br != BLOCK_SIZE) {
         return;
     }
@@ -238,7 +238,7 @@ uint8_t hdd_read(uint8_t drive, uint16_t block, uint8_t *data) {
 //        printf("Prefetch\n");
         prefetch.valid = false;
         prefetch.block++;
-        memcpy(data, prefetch.data, BLOCK_SIZE);
+        memcpy(data, cache, BLOCK_SIZE);
         return SUCCESS;
     }
 
@@ -274,8 +274,9 @@ uint8_t hdd_write(uint8_t drive, uint16_t block, const uint8_t *data) {
     async.valid = true;
     async.drive = drive;
     async.block = block;
-    memcpy(async.data, data, BLOCK_SIZE);
+    memcpy(cache, data, BLOCK_SIZE);
 
+    prefetch.valid = false;
     return SUCCESS;
 }
 
@@ -291,7 +292,7 @@ void hdd_async(void) {
     }
 
     UINT bw;
-    FRESULT fr = f_write(&hdd[async.drive].image, async.data, BLOCK_SIZE, &bw);
+    FRESULT fr = f_write(&hdd[async.drive].image, cache, BLOCK_SIZE, &bw);
     if (fr != FR_OK || bw != BLOCK_SIZE) {
         if (fr == FR_DENIED) {
             hdd[async.drive].async = WRITE_PROT;
