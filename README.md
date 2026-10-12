@@ -10,13 +10,13 @@ This firmware not only provides a SmartPort controller but at the same time also
 
 A2retroNET implements this unique feature by allowing switching between a SmartPort mode and a SSC mode. However, the trick is that most functionality is available in both modes:
 
-|                      | SmartPort mode           | SSC mode                 |
-|----------------------|:------------------------:|:------------------------:|
-| SmartPort controller | :heavy_check_mark:       | :heavy_check_mark:       |
-| Pascal 1.1 char I/O  | :heavy_check_mark:       | :heavy_check_mark:       |
-| Direct ACIA char I/O | :heavy_check_mark:       | :heavy_check_mark:       |
-| BASIC char I/O       | :heavy_multiplication_x: | :heavy_check_mark:       |
-| Reboot               | :heavy_check_mark:       | :heavy_multiplication_x: |
+|                      | SmartPort mode     | SSC mode           |
+|----------------------|:------------------:|:------------------:|
+| SmartPort controller | :heavy_check_mark: | :heavy_check_mark: |
+| Pascal 1.1 char I/O  | :heavy_check_mark: | :heavy_check_mark: |
+| Direct ACIA char I/O | :heavy_check_mark: | :heavy_check_mark: |
+| BASIC char I/O       |                    | :heavy_check_mark: |
+| Reboot               | :heavy_check_mark: |                    |
 
 Because the SmartPort controller is available in both modes, ProDOS continues to function as expected when switching to SSC mode. There are several ways to manage switching between the two modes.
 
