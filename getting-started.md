@@ -8,7 +8,7 @@ The list of A2Pico projects can always be found at: https://github.com/oliversch
 
 A2Pico firmwares come in three types:
 
-* `<project>_A2Pico_<date>.uf2` is intended exclusively for the _A2Pico_.
+* `<project>_A2Pico_<date>.uf2` is intended exclusively for the _Original A2Pico_.
 * `<project>_A2Pico2LiteW_<date>.uf2` is intended exclusively for the _A2Pico2Lite W_.
 * `<project>_A2Pico2-generic_<date>.uf2` is intended exclusively for all other A2Pico2 (incl. the _A2Pico2Lite_).
 
