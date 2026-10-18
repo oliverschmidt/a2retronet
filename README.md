@@ -53,7 +53,7 @@ Please ensure the A2Pico `USB Pwr` is set to `off` when using this firmware!
 
 ## A2retroNET-Drive.uf2
 
-### A2Pico and A2Pico2
+### Original A2Pico, A2Pico2 and A2Pico2 WE
 
 This firmware uses both a USB(-C) Thumb Drive and a Micro SD Card as storage media. Note that the Apple II reads from the SD Card approximately three times faster than from the Thumb Drive. However, unlike the SD Card, the Thumb Drive is fully hot-pluggable. This functionality is best utilized with an extension like the [External USB Port](https://jcm-1.com/product/external-usb-port-for-a2pico-usb-micro-to-usb-a/) or the [External USB-C Port](https://jcm-1.com/product/external-usb-c-port-for-a2pico2-lite/), which allows access to the Thumb Drive without having to open the Apple II. Any change in the Thumb Drive's state is detected by the Apple II in real time.
 
