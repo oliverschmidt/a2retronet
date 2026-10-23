@@ -255,9 +255,6 @@ static const void __not_in_flash("cffx_put") (*cffx_put[])(uint32_t) = {
 };
 
 void __time_critical_func(board)(void) {
-
-    a2pico_init();
-
     a2pico_resethandler(&reset);
 
     while (true) {
