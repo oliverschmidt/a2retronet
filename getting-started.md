@@ -6,12 +6,8 @@ The firmware you selected at purchase is pre-flashed on your A2Pico. However, we
 
 The list of A2Pico projects can always be found at: https://github.com/oliverschmidt/a2pico
 
-A2Pico firmwares come in two types:
+Flashing your A2Pico is a breeze. All you need is a standard USB cable:
 
-* `<project>_A2Pico_<date>.uf2` is intended for the _Original A2Pico_.
-* `<project>_A2Pico2_<date>.uf2` is intended for all A2Pico2 cards.
-
-The actual firmware flashing process is a breeze. All you need is a standard USB cable:
 1. Remove the A2Pico from your Apple II.
 2. Press and hold the `BOOTSEL` button on the A2Pico.
 3. Connect the A2Pico to a PC.
@@ -25,8 +21,8 @@ The latest A2retroNET firmware files can always be found at: https://github.com/
 
 The A2retroNET firmware comes in two variants:
 
-* `A2retroNET-Link_<type>_<date>.uf2` allows access to the Micro SD Card from a connected PC and also emulates a Super Serial Card.
-* `A2retroNET-Drive_<type>_<date>.uf2` allows the use of a USB Thumb Drive (in addition to the Micro SD Card if present).
+* `A2retroNET-Link_<date>.uf2` allows access to the Micro SD Card from a connected PC and also emulates a Super Serial Card.
+* `A2retroNET-Drive_<date>.uf2` allows the use of a USB Thumb Drive (in addition to the Micro SD Card if present).
 
 The Micro SD Card or USB Thumb Drive must be formatted with FAT, FAT32, or exFAT.
 
